@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<settings>
+	
+		<!-- ??? 15:26 settings, typeAliases, mappers 태그들 뭘 위한 코드더라? -->
+		<setting name="jdbcTypeForNull" value="NULL" />
+	
+	</settings>
+	
+	<typeAliases>
+	
+	</typeAliases>
+	
+	<!--
+		원래 여기에 들어가야 할 것들
+		environments, dataSource => DB연결정보
+		근데 이제 여기서 안할거임!
+	-->
+	
+	<mappers>
+	
+	</mappers>
+
+</configuration>
