@@ -18,7 +18,7 @@
 	<!--
 		원래 여기에 들어가야 할 것들
 		environments, dataSource => DB연결정보
-		근데 이제 여기서 안할거임!
+		근데 이제 여기서 안할거임! -> root-context.xml에서 작업
 	-->
 	
 	<mappers>

@@ -29,14 +29,85 @@
 		우리가 서비스에서 매번 sqlSession 반납작업했음, 객체 죽이는 생명주기 관리였다, 이제 스프링이 해야함
 		-> destroy-method 속성으로 close 메소드 호출하게
 		값들이 setter 호출을 통해 인자값 전달해서 driverClassName 필드 등에 값이 들어가도록 해야함
-		bean 안에 쓸 수 있는 태그도 몇 없음
+		bean 안에 쓸 수 있는 태그도 몇 없음 -> property태그에 작성, 이거도 마이바티스에서 해봤음~
+		BasicDataSource는 마이바티스 객체
+		실질적으로 DB랑 연결하려면 자바에서 필요한 객체는 JDBC에서 Driver 필요
+		Driver의 정체는 클래스, OracleDriver.class
+		jdbc는 인터페이스고요
+		아무튼 value에 패키지경로부터 클래스명까지 써줘야함
+		url도 setUrl 호출하는거니까 name 속성에 값을 대입할 필드명
+		필드에 대입할 값은 value 속성에
+		스프링이 만들어놓은 필드명이 카멜케이스 아니라서 username으로 써줘야함
+		우리는 스프링을 돌릴 부품이 되어버렸어여 ㅎㅎ 시키는대로 해야함
 	-->
 	
 	<bean class="org.apache.commons.dbcp.BasicDataSource"
 		  id="dataSource" destroy-method="close">
-		  
-	<property
-	
+		
+		<!-- name 속성에 내가 값을 대입하고 싶은 필드의 이름을 적어준다, setter니까 인자값 전달해줘야하므로 value 속성 이용해서 값을 넣어주도록 함 -->  
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="jdbc:oracle:thin:@115.90.212.20:10000:xe" />
+		<property name="username" value="CJ18" />
+		<property name="password" value="CJ181234" />
 	</bean>
+	
+	<!--
+		실제로 일어나는 일
+		DataSource dataSource = new BasicDataSource();
+		이 안의 property의 역할은 setter 호출하기(각 필드에 해당하는 setter 하나씩 호출)
+		전부 자바 bean 명세에 맞춰서 만들어졌기 때문에 정확하게 아래의 코드가 동작
+		dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
+		dataSource.setUrl("jdbc:oracle:thin:@115.90.212.20:10000:xe");
+		dataSource.setUsername("CJ18");
+		dataSource.setPassword("CJ181234");
+		스프링이 이 코드를 동작시킴 -> IoC
+	-->
+	
+	<!-- 데이터소스 끝, 최종적으로 DB가서 SQL 실행하려면 SqlSession 객체가 필요함, 이거 만드려면? SqlSession 만들 공장 필요
+	마이바티스에서 만드려면 factoryBuilder로 factory만들고 session 만들었다, 절차 생각, 우리가 안만들거고 스프링이 만들건데 뭐가필요한지 알아야 찾아서 만들게하지
+	sqlSessionFactory도 직접만들게 아니고 jar에서 찾을 수 있음 -> 이것도 Bean으로 구현되었군
+	우리가 데이터소스 객체를 setter로 DataSource 타입 dataSource 필드에 대입해줘야함
+	팩토리 클래스를 스프링이 관리할 수 있도록 Bean으로 등록해줘야겠다 -> bean 태그
+	class 속성에 풀클래스명
+	이 필드에도 값 대입해줘야함
+	??? 16:24 나중에 mappers에도 매퍼 등록하고 해줘야하는데 마이바티스에서 resources 해서 뭐했던거 기억
+	??? configLocation에는???
+	스프링은 나중에 target 폴더가 배포된다 -> classes 폴더가 익숙하군, 우리가 작업한 자바, xml 파일들이 들어감
+	여기부터 경로가 시작되는 최상위루트
+	dataSource 대입시킬건 위에서 적어둔거 참조해서 넣어줘야함, value 속성이 아니고 ref 속성으로 id 속성값 작성
+	여기까지 팩토리만든것
+	-->
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory" >
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- 진짜 세션 만들어야함, 그냥 sqlSession 말고 스프링에서 마이바티스 쓸 때 사용할 sqlSession -> SqlSessionTemplate 사용(이것도 implements SqlSession 하고있음)
+	구현한다는것은 뭘 할 수 있다는 뜻? 다형성 적용 가능, SqlSession 타입으로 쓸 수 있다는 뜻
+	이건 마이바티스에서 sqlSession으로 쓰는거니 좀더 다재다능
+	sqlSessionFactory 필드에 방금 만든거 넣어줘야함
+	근데 필드 setter가 없음, getter뿐
+	이걸 bean으로 등록하는건 확정인데? setter도 없음
+	지금 spring이 못하겠다고 빨간줄
+	bean 태그 쓰면 기본생성자로 객체 생성하는 일이 일어나는데, 기본생성자도 없음
+	그러니 기본생성자로 객체생성불가
+	문제 두개, factory setter 없음, 기본생성자 없음
+	근디 SqlSessionTemplate가 있음? 얜 뭐임? 매개변수 생성자, 이게있으니 기본생성자 없음
+	만드는것과 동시에 전달받아야함
+	property setter로 하는게아니라
+	매개변수 생성자를 호출해야함 -> constructor-arg 태그
+	인자로 값을 넘길게 아니라 위에 등록해둔 bean 객체를 넘기고 싶음
+	이걸 보내고싶다면 적어야 할 속성은 ref이고 거기에 id 속성값을 작성
+	-->
+	<bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSession">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	<!-- 얘는 결국 아래를 동작시킨다
+		SqlSession sqlSession = new SqlSessionTemplate(sqlSessionFactory);
+		이제 bean으로 등록해뒀으니 예전처럼 직접 이 코드 쳐서 작업안하고 sql에게 sqlSession 달라고 해야함
+		-> IoC(제어의 역전) 필요하다고 쓸 수 있는게 아니라 스프링님께 주십시요 해야함
+	-->
+	
+	<!-- value 잘못쓴건 사용자가 알아서 쓰는 값이라 잘못써도 빨간줄이 안가니까 여기 잘못썼다면 에러날확률이 큼 -->
 		
 </beans>
