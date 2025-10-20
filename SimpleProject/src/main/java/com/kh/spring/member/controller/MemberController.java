@@ -2,8 +2,7 @@ package com.kh.spring.member.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.kh.spring.member.model.vo.Member;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class MemberController {
@@ -74,6 +73,7 @@ public class MemberController {
 	 * 
 	 */
 	
+	/*
 	@RequestMapping("login")
 	public void login(Member member) {
 		
@@ -83,5 +83,75 @@ public class MemberController {
 		// 이거 원래 우리가 직접 했는데 스프링이 해준다
 		
 	}
-
+	*/
+	
+	/*
+	// 어떤 매핑값으로 오는 요청을 처리할 건지 애노테이션 작성
+	@RequestMapping("login")
+	public String login(HttpServletRequest request) {
+		
+		// 방법 1. HttpServletRequest 객체를 사용하는 방법 -> request.getParameter();
+		// 잘 사용되지 않음, 앞에것과 똑같이 할 수 있다고 알려주신것
+		// 원래 서블릿 생성하고 매개변수자리에 이거 작성해서 doGet, doPost 메소드 작업 했음
+		// 그렇게 앞에서 했던것처럼 가능
+		String userId = request.getParameter("userId");
+		String userPwd = request.getParameter("userPwd");
+		
+		System.out.printf("id : %s , pw : %s", userId, userPwd);
+		
+		return "main";
+		// 메소드 반환타입 void -> String으로 수정
+		
+		// 브라우저에서 localhost/spring/login으로 요청 보내면 콘솔에 출력된다
+		// 앞에서 인자값 넘긴대로 잘 가져와짐
+		
+	}
+	*/
+	
+	/*
+	@RequestMapping("login")
+	public String login(@RequestParam(value="userId", defaultValue="fffff") String id,
+						@RequestParam(value="userPwd") String pwd) {
+		
+		// 방법 2. RequestParam 애노테이션 사용 -> request.getParameter(); 생각하기
+		// 사용자가 입력한 값 두개를 받아서 써야함
+		// 매개변수 자리에 받을 값으로 두개를 작성
+		System.out.printf("이렇게 하면 될까요?? id : %s, pwd : %s,", id, pwd);
+		
+		return "main";
+		// null, null이 나온다
+		// userId -> id, userPwd -> pwd 이렇게 담고싶다
+		// 변수 앞에 애노테이션을 달아준다(자료형 앞에 @RequestParam) -> 요청 파라미터 줄인걸로 생각(request.getParameter 줄인느낌)
+		// 넘어올 값이 계속 늘어날 수 있는데? 어떤 값이 넘어오는지? 그러면 애노테이션 다음에 또 추가
+		// Param은 key-value 세트로 넘어옴, 어떤 key값으로 넘어올지를 value 속성으로 추가
+		
+		// 좋은 점은 속성중에 defaultValue를 추가할 수 있음
+		// 만약에 앞단에서 값이 넘어오는데 userId라는 key값이 안남어오는 경우가 있을 수 있음 앞단이 어떻게 만들어졌는지에 따라
+		// 딱히 넘어온게 없는 경우, 빈문자열일 경우 -> 적어둔 디폴트값이 변수에 담긴다 -> 이걸 활용가능해서 편리하고 좋다
+		
+	}
+	*/
+	
+	/*
+	@RequestMapping("login")
+	public String login(@RequestParam(value="userId") String userId,
+						@RequestParam(value="userPwd") String userPwd) {
+		
+		// 방법 3. @RequestParam 생략 가능한 경우
+		System.out.println("으흐흫ㅎㅎㅎ id : " + userId + ", pwd : " + userPwd);
+		
+		return "main";
+		// 이번엔 앞단의 값이 잘 넘어온다
+		// 요청처리기에 매개변수를 작성해뒀는데, 매개변수의 이름이 앞단의 key값과 일치함
+		// 이러면 스프링이 앞에다가 자동으로 알아서 @RequestParam 애노테이션을 붙여준다 -> @RequestParam(value="userId")
+		// 같은 이름으로 매개변수를 작성해주면 RequestParam을 생략할 수 있음
+		
+	}
+	*/
+	
+	// 결국 앞단에서 넘어온 변수를 가공해야함, 마이바티스로 넘기려면 하나에 담아서 가야하니까
+	// 그래서 좋은 방법이지만 지난주 금요일에 쓴걸 한번 해보자, 최종적으로 데이터 가공한 다음에 서비스 호출해서 넘겨야하니까
+	// 방법 4.
+	// DBeaver 수정작업, DTO 생성
+	
 }
