@@ -1,5 +1,8 @@
 package com.kh.spring.member.controller;
 
+import java.io.UnsupportedEncodingException;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,11 +139,12 @@ public class MemberController {
 		System.out.printf("이렇게 하면 될까요?? id : %s, pwd : %s,", id, pwd);
 		
 		return "main";
-		// null, null이 나온다
+		// null, null이 나온다 -> 한글 깨지는건 console encoding 설정(윈도우 운영체제랑 맞춰져있어서 MS949로 변경해줌)
+		
 		// userId -> id, userPwd -> pwd 이렇게 담고싶다
 		// 변수 앞에 애노테이션을 달아준다(자료형 앞에 @RequestParam) -> 요청 파라미터 줄인걸로 생각(request.getParameter 줄인느낌)
 		// 넘어올 값이 계속 늘어날 수 있는데? 어떤 값이 넘어오는지? 그러면 애노테이션 다음에 또 추가
-		// Param은 key-value 세트로 넘어옴, 어떤 key값으로 넘어올지를 value 속성으로 추가
+		// Param은 key-value 세트로 넘어옴, 어떤 key값으로 넘어오는 값을 뽑아서 쓸지를 value 속성으로 추가
 		
 		// 좋은 점은 속성중에 defaultValue를 추가할 수 있음
 		// 만약에 앞단에서 값이 넘어오는데 userId라는 key값이 안남어오는 경우가 있을 수 있음 앞단이 어떻게 만들어졌는지에 따라
@@ -190,8 +194,8 @@ public class MemberController {
 	 * 3. setter메서드가 반드시 존재할 것
 	 * 
 	 * 지금은 로그인 매핑으로 요청이 들어온다
-	 * DS -> HM -> Bean으로 등록해두었으니 RequestMapping으로 login 호출해야한다고 판단 -> 직접 호출하지 않고 HA를 거쳐서 HA가 판별하도록 함 -> 매개변수 판별 후 key-value를 보고, 기본생성자 호출, setter 호출 -> 각 필드에 값을 넣어준다
-	 * ??? 11:15
+	 * DS에서 요청을 받음 -> HM를 찾아서 요청 처리하는 애가 있는지 확인 -> Bean으로 컨트롤러 등록도 해놨고, RequestMapping으로 login 호출해야한다고 판단 -> DS가 호출해야하는데 매개변수 자리에 뭐가 들어올지 모르므로 직접 호출하지 않고 HA를 거쳐서 HA가 판별하도록 함
+	 * -> 핸들러를 봤더니 매개변수 자리에 적힌게 사용자 정의 자료형이네? 기본자료형이네? 이런 식으로 매개변수 판별 후(지금은 userId, userPwd 이런식으로 값 두개가 넘어온다) key-value를 보고, 기본생성자 호출로 객체 생성, name 속성값이 필드명과 동일하다면 setter 호출 -> 각 필드에 값을 넣어준다
 	 * 
 	 */
 	/*
@@ -206,27 +210,35 @@ public class MemberController {
 	dependency injection 방식 1
 	@Autowired == 필드 인젝션 field injection, 스프링이 알아서 주입, 옛날 개발자들이 편하게 사용하던 방식
 	private MemberService memberService;
-	작업속도는 빠르다
 	*/
 	
 	// DI 방식 2
 	/*
-	@Autowired == 세터 인젝션
+	@Autowired == 세터 인젝션, 필드는 그대로 두고 setter에 애노테이션을 달아서, 스프리잉 세터를 이용해서 이것에 맞는 타입을 주입하게 해주는 방식
 	public void setMemberService() {
 		this.memberService = memberService;
 	}
 	1, 2 둘다안씀
+	setter는 논외이다, 호출될때마다 필드값이 바뀔 수 있음, 객체(memberService)가 다른애로 변할 수 있으므로 위험한 방법
+	field injection은 귀찮다, 코드짜기싫어 생성자 왜만들어 귀찮아 하는 사람들이 많이 씀
+	작업속도는 제일 빠르지만 실제 메소드를 호출하기 전까지 memberService 객체가 존재하는지 아닌지 알 수 없음
+	field injection은 실제 서비스로 구현된것이 없어도 controller를 동작시키는데는 문제가 없다, null값이 들어와도 null인지 아닌지 판별불가
+	얘도 권장하는 방식이 아님
 	*/
 	
-	private final MemberService memberService;
+	private final MemberService memberService; // 이곳에 주입된다
 	
-	// 권장방식은 생성자를 통한것
+	// 의존성 주입의 권장방식은 생성자를 통한것, 생성자 주입을 받아서 의존성을 구현해라
 	@Autowired /* ☆ 권장 방법 ★ */
 	public MemberController(MemberService memberService) {
 		this.memberService = memberService;
 	}
-	// ??? 12:23 DI 방식 두개의 문제점
-	// ??? final이 붙은 변수는 선언과 동시에 초기화를 진행해야함
+	// 가장 권장하는 방식은 생성자를 통해서 필드를 파이널로 초기화 한 뒤에 객체를 주입받아서 사용하는 방식
+	// final 키워드로 선언된 변수는 반드시 선언과 동시에 초기화를 진행해야함
+	// 생성자 코드 없으면 final 선언코드 바로 빨간줄 -> 초기화 안했으므로
+	// 지금 빨간줄없는 이유는 생성과 동시에 필드에 값을 대입하니까, 매개변수 생성자가 생겼으므로 기본생성자가 없을것이다
+	// 그러면 이 객체를 만드려면 이 매개변수 생성자를 호출하는 방법밖에 없고, 여기에서 바로 값을 대입하고 있으므로(초기화작업) 빨간줄 안생김(초기화를 했다는 뜻)
+	// 무조건 MemberService 타입 객체를 넘겨야 Controller가 생성된다 -> 필드가 비어있을 수가 없음
 	// 객체의 불변성도 지키고 중간에 다른 객체로 변환될 걱정도 없어짐
 	
 	/*
@@ -287,13 +299,12 @@ public class MemberController {
 		// -> 이걸 Dependency Injection, 의존성 주입이라고 표현
 		// 실제로 서비스를 의존하고 있었던 기존작업코드, 직접 객체를 생성해서 의존, 타입도 쓰고 객체도 만들었다
 		// 스프링에서는 실제로 사용할 서비스의 타입도 숨기고, 객체 생성도 스프링에게 위임함
-		// 필요한 객체는 스프링에게 받아서 사용, 스프링이 알아서 주입해줌
+		// 필요한 객체는 스프링에게 받아서 사용, 이걸 작동시킬 수 있는 객체를 스프링이 알아서 주입해줌
 		// 이렇게 컨트롤러가 서비스에 의존하고 있던 의존도가 낮아짐, 이게 의존성 주입
 		// 실제 사용할 객체를 개발자가 생성하는것이 아니라 스프링으로부터 주입받아서 사용하는 개념
 		
 		// 서비스에서 정해둔 자료형으로 돌려받을것이 정해져있음
 		MemberDTO loginMember = memberService.login(member);
-		
 		
 		if(loginMember != null) {
 			
@@ -416,13 +427,14 @@ public class MemberController {
 			
 			// 실패는 request객체에 메세지 넣어서 화면지정했는데 이제는 이것도 model and view로 처리
 			// 이거 좋은점 : 메소드 체이닝 가능, 나중에 담을 값 늘어나면 .()으로 추가가능
-			// addObject로 front에 msg 값 전달 가능
+			// addObject 메소로 front에 msg 값 넣고 전달 가능
 			mv.addObject("msg", "로그인실패!")
 			  .setViewName("include/error_page");
 			
 		}
 		
 		return mv;
+		// if 블록과 else 블록에서 따로 return을 작성할 필요 없이 한꺼번에 마지막에 return mv;로 반환받을 수 있음 -> 이게 좀 편할지도?
 		
 	}
 	// 기본적으로 우리가 구현할것은 CRUD
@@ -469,14 +481,24 @@ public class MemberController {
 		// Spring으로 injection 받아서 쓰기로 했음, 필드값과 동일하게 만들어둔 객체를 매개변수로 작성
 		// -> 값뽑기, 데이터가공까지 한번에 한다
 		// 확인해봐야하니까 log에 참조해서 info 호출로 가능
-		// ??? 17:09 xml 설정
+		// xml 설정으로 작업 -> log4j.xml에서 할 수 있다, 여기 보면 level value에 info가 있는데 이거까지 출력하겠다는 뜻
+		// 개발할때는 debug로 놨다가 운영할때는 info로 놨다가 이런식으로 더 자세하게 또는 덜 자세하게 로그 찍는 경우에 나눠서 작업하는데 활용
 		log.info("{}", member);
+		// 내가 출력하고 싶은 객체는 문자열에 중괄호 넣고 객체이름 전달하면 toString 결과 나온다
 		// enrollDate 빼고 나머지값 잘 들어오는지 확인
 		// 홍길동이 가입할 수 있음 -> userName 필드에 ????..?? 이런게 출력됨 -> POST 요청 보냈는데, 인코딩 설정안함
 		// 값을 request.setCharacterEncoding("UTF-8"); 해야하는데 안해줬으니까 이렇게됐겠지
 		// 이거 언제해줘야함? request에서 getParameter 하기 전에 인코딩해야함, 이미 뽑아서 안된다고요
 		// 하려면 어떻게 해야하나? HttpServletRequest request를 매개변수로 쓰고
-		// ??? 17:13 request.setCharacter 이것도 하고, try-catch도 하고, 어쩌고 저쩌고 해야함
+		// request.setCharacterEncoding 이것도 하고, try-catch도 하고, 어쩌고 저쩌고 해야함(서블릿은 알아서 예외처리가 되게 구현되어있었음)
+		// 여기서는 예외처리 안되어있으므로 그냥 쓰면 예외난다고 하니 예외처리 해줘야함 -> try-catch -> 그리고 값을 뽑아야하는데 커맨드 객체 쓸 수 있나? 안됨... 
+		/*
+		try {
+			request.setCharacterEncoding("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		*/
 		// 최소한 DispatcherServlet 다음에 넘기기 전에는 해줘야하는데 우리 배웠음, 서블릿 가기 전에 Filter 써서 바꾸는거 배웠음
 		// 전 세계가 이 인코딩 바꿀 필터가 있어야함.. 당연히 스프링에서 만들어서 제공되겠지
 		// CharacterEncodingFilter에 값을 입력해주면 된다, 충돌 시 인코딩 설정을 강제로 내걸로 하도록 true로 변경해주는것도 좋고
