@@ -258,6 +258,17 @@
 		근데 지금은 lib가 없음, 만들어줘야함 -> 태그라이브러리 추가
 		개인적으로 추가할것은 이렇게 추가해서 사용
 		-->
+		
+		<!-- MemberDTO 작업 전에 라이브러리 추가 -->
+		<!-- 2. 자바개발자라면 모두가 사용하는 라이브러리 -->
+		<!-- 메이븐 레포에서 받으면 되는데 이번엔 선생님께 받음, 슬랙 수업자료에서 복사해오기 -->
+		<dependency>
+		    <groupId>org.projectlombok</groupId>
+		    <artifactId>lombok</artifactId>
+		    <version>1.18.30</version>
+		    <scope>provided</scope>
+		</dependency>
+		<!-- 추가하고 세팅 필요, IDE에 설정하는 거라서 -> 메이븐 설치폴더로 간다 -->
 		    
 	</dependencies>
     <build>

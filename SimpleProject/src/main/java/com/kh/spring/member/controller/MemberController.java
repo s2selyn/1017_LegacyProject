@@ -2,10 +2,20 @@ package com.kh.spring.member.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import com.kh.spring.member.model.dto.MemberDTO;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j // loggin, log -> 기록 남기는것, 롬복 설치해야 사용 가능, 롬복이 제공함
 @Controller
 public class MemberController {
+	
+	/*
+	public MemberController() {
+		log.info("하이 난 빈임");
+	}
+	*/
 	
 	// 서블릿을 더이상 만들지 않지만, 서블릿이 사라진것은 아님
 	// 서버 구동하면 web.xml을 읽는다
@@ -153,5 +163,34 @@ public class MemberController {
 	// 그래서 좋은 방법이지만 지난주 금요일에 쓴걸 한번 해보자, 최종적으로 데이터 가공한 다음에 서비스 호출해서 넘겨야하니까
 	// 방법 4.
 	// DBeaver 수정작업, DTO 생성
+	
+	@RequestMapping("login")
+	public String login(MemberDTO member) {
+		
+		// System.out.println("로그인 시 입력한 정보 : " + member);
+		// 롬복에 의해 값이 추가되어서 toString 출력됨
+		
+		// 별로 마음에 안드는점? 초보개발자라서 콘솔에 뭘 출력해봐야한다, 확인하면서 개발하는게 좋아요
+		// 근데 시스템 클래스를 이용해서 출력하는것이 자원을 많이 쓰는 작업임, 자바 자체 API로 불러내는데 자원을 많이 씀
+		// 문자열로 출력해서 확인하니까 + 기호 써서 하는경우가 많은데 String + String은 불변이라 기존 스트링이 쓰이는게 아니라 다른 스트링이 새로 생성되니 메모리 낭비.. 마음에 안들어서 printf 썼지만 자원을 아낄 조금 더 좋은 방법이 있다
+		// 결과, 값을 확인할 때 출력해보는데... 출력할때도 사용하는 라이브러리가 많다.
+		// 스프링 레거시, mvc에는 logging 라이브러리가 들어있음, 이것도 객체로 만들어서 해봐야하는데, 롬복을 배우면 출력도 쉬워짐
+		// 맨위로 올라가서 컨트롤러 애노테이션 위에 작업 -> @Slf4j 추가하고 import
+		log.info("Member객체 필드값 확인 ~ {}", member);
+		// printf 메소드처럼 구멍뚫기 -> {}
+		// 어디에서 출력한건지도 같이 출력된다
+		// INFO : com.kh.spring.member.controller.MemberController - Member객체 필드값 확인 ~ MemberDTO(userId=thisiskey, userPwd=thisispassword, userName=null, email=null, enrollDate=null)
+		
+		// 진짜진짜 가보자고
+		/*
+		 * 다양한 방법으로 앞단에서 넘어온 핸들러에서 값을 뽑음
+		 * 옛날 다이나믹 프로젝트, getParam, DTO에서 아무것도 안적고 가져오는 방법
+		 * 스프링은 어떻게 알고 이 값을 넣어주는거지? 뭐가필요한지 어떻게 알아?
+		 * 
+		 */
+		
+		return "main";
+		
+	}
 	
 }
