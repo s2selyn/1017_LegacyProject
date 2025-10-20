@@ -29,5 +29,65 @@
 		<servlet-name>appServlet</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+	
+	<!-- DispatcherServlet 생성 이후에 해야하는 작업임, 필터 생ㅅ어 -->
+	<!--
+		* Filter !
+		
+		모든 요청 처리 전 공통적으로 수행해야하는 기능들을
+		클라이언트의 요청을 Servlet가 받기 전 먼저 필터링해서 수행할 수 있도록 함
+		web.xml에 기술해서 해당 작성내용이 서버구동과 동시에 일어날 수 있도록 세팅
+		
+		* 스프링에서 인코딩을 위한 필터
+		- org.springframework.web.filter.CharacterEncodingFilter
+		이 객체를 올리면서 작성할 태그
+		- <filter> + <filter-mapping>
+		
+		이작업도 총대가 하는일, 팀작업인데 이 파일은 하나니까
+		
+		필드에 값을 대입할 때 사용할 태그는 <init-param>
+	-->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	
+	<!-- 어떤 요청이 오면 매핑할건지 -->
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<!-- appServlet은 url-pattern이 / -->
+	<!-- encodingFilter는 url-pattern이 /* -->
+	<!-- 뭐가 더 포괄적인걸까? /* 별달린 이녀석 -->
+	<!--
+		/* == 모든 요청에 대해서(확장자가 붙어있는 정적자원까지의 요청을 처리)
+		/login
+		/signup
+		/join
+		+
+		/style.css
+		/module.js
+		/image.png
+		/test.txt
+		나중에 생길 수도 있는 이런 확장자가 붙은 모든 정적자원까지 처리하겠다는 의미
+		
+		/ == 동적인 요청만 처리하겠음
+		/login
+		/signup
+		/join
+		이런건 서블릿을 처리함
+		만약에 서블릿이 정적자원을 처리한다면? 컨트롤러에 가서 찾아버림, modul.js이걸 컨트롤러 매핑을 찾음 -> 없으니까 바로 404뜸
+		그러므로 서블릿은 /*로 적으면 큰일남
+		아무튼 전부 필터 작업 해줘야하니까 필터는 /*로 작성
+	-->
 
 </web-app>

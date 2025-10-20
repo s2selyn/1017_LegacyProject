@@ -459,4 +459,35 @@ public class MemberController {
 		
 	}
 	
+	@PostMapping("signup")
+	public String signup(MemberDTO member
+					// , HttpServletRequest request
+					) {
+		
+		// 앞에서 사용자가 입력한 값을 받아서 핸들러가 처리하기 위해서는 값을 받아와야한다
+		// 네개의 값이 넘어올거란말여? 아이디, 비밀번호, 이름, 이메일
+		// Spring으로 injection 받아서 쓰기로 했음, 필드값과 동일하게 만들어둔 객체를 매개변수로 작성
+		// -> 값뽑기, 데이터가공까지 한번에 한다
+		// 확인해봐야하니까 log에 참조해서 info 호출로 가능
+		// ??? 17:09 xml 설정
+		log.info("{}", member);
+		// enrollDate 빼고 나머지값 잘 들어오는지 확인
+		// 홍길동이 가입할 수 있음 -> userName 필드에 ????..?? 이런게 출력됨 -> POST 요청 보냈는데, 인코딩 설정안함
+		// 값을 request.setCharacterEncoding("UTF-8"); 해야하는데 안해줬으니까 이렇게됐겠지
+		// 이거 언제해줘야함? request에서 getParameter 하기 전에 인코딩해야함, 이미 뽑아서 안된다고요
+		// 하려면 어떻게 해야하나? HttpServletRequest request를 매개변수로 쓰고
+		// ??? 17:13 request.setCharacter 이것도 하고, try-catch도 하고, 어쩌고 저쩌고 해야함
+		// 최소한 DispatcherServlet 다음에 넘기기 전에는 해줘야하는데 우리 배웠음, 서블릿 가기 전에 Filter 써서 바꾸는거 배웠음
+		// 전 세계가 이 인코딩 바꿀 필터가 있어야함.. 당연히 스프링에서 만들어서 제공되겠지
+		// CharacterEncodingFilter에 값을 입력해주면 된다, 충돌 시 인코딩 설정을 강제로 내걸로 하도록 true로 변경해주는것도 좋고
+		// 모든곳에서 사용하도록 해야함 -> web.xml로 감
+		// 필터 추가로 한글 인코딩해서 값이 잘 들어오는거 확인
+		
+		memberService.signUp(member);
+		// 지금 signUp 반환형 void, 실패했을때는 여기 못돌아오게 해야함
+		
+		return "redirect:join";
+		
+	}
+	
 }
