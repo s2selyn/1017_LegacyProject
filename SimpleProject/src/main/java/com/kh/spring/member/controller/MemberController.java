@@ -161,11 +161,44 @@ public class MemberController {
 	
 	// 결국 앞단에서 넘어온 변수를 가공해야함, 마이바티스로 넘기려면 하나에 담아서 가야하니까
 	// 그래서 좋은 방법이지만 지난주 금요일에 쓴걸 한번 해보자, 최종적으로 데이터 가공한 다음에 서비스 호출해서 넘겨야하니까
-	// 방법 4.
+	// 방법 4. 커맨드 객체 방식
 	// DBeaver 수정작업, DTO 생성
+	
+	/*
+	 * HandlerAdapter의 판단 방법 :
+	 * 
+	 * 1. 매개변수 자리에 기본타입(int, boolean, String, Date...)이 있거나
+	 * 	  RequestParam애노테이션이 존재하는 경우 == RequestParam으로 인식
+	 * 
+	 * 2. 매개변수 자리에 사용자 정의 클래스(MemberDTO, Board, Reply..)이 있거나
+	 *    @ModelAttribute애노테이션이 존재하는 경우 == 커맨드 객체 방식으로 인식
+	 * 
+	 * 커맨드 객체 방식
+	 * 
+	 * 스프링에서 해당 객체를 기본생성자를 이용해서 생성한 후 내부적으로 setter메서드를 찾아서
+	 * 요청 시 전달값을 해당 필드에 대입해줌
+	 * 
+	 * 1. 매개변수 자료형에 반드시 기본생성자가 존재할 것
+	 * 2. 전달되는 키 값과 객체의 필드명이 동일할 것
+	 * 3. setter메서드가 반드시 존재할 것
+	 * 
+	 * 지금은 로그인 매핑으로 요청이 들어온다
+	 * DS -> HM -> Bean으로 등록해두었으니 RequestMapping으로 login 호출해야한다고 판단 -> 직접 호출하지 않고 HA를 거쳐서 HA가 판별하도록 함 -> 매개변수 판별 후 key-value를 보고, 기본생성자 호출, setter 호출 -> 각 필드에 값을 넣어준다
+	 * ??? 11:15
+	 * 
+	 */
+	/*
+	 * 원래 하던건 private MemberService memberService = new MemberService();
+	 * 
+	 * -> 이게 무슨 작업? 변수를 선언하고 객체를 생성하는 과정
+	 * 근데 이거 이제 스프링한테 위임하고 스프링이 제어하기로 했음
+	 * private MemberService memberService 이까진 우리가 하더라도 = new MemberService(); 이건 우리가 안할듯
+	 */
+	private MemberService memberService;
 	
 	@RequestMapping("login")
 	public String login(MemberDTO member) {
+		// (@ModelAttribute MemberDTO member)
 		
 		// System.out.println("로그인 시 입력한 정보 : " + member);
 		// 롬복에 의해 값이 추가되어서 toString 출력됨
@@ -185,10 +218,23 @@ public class MemberController {
 		/*
 		 * 다양한 방법으로 앞단에서 넘어온 핸들러에서 값을 뽑음
 		 * 옛날 다이나믹 프로젝트, getParam, DTO에서 아무것도 안적고 가져오는 방법
-		 * 스프링은 어떻게 알고 이 값을 넣어주는거지? 뭐가필요한지 어떻게 알아?
+		 * 스프링은 어떻게 알고 이 값을 넣어주는거지? 뭐가필요한지 어떻게 알아? -> 노션확인
+		 * 
+		 * 커맨드 객체 방식 -> @ModelAttribute라고 작성
+		 * (아까 @RequestParam 생략한것처럼 @ModelAttribute를 생략할 수 있음)
+		 * 
+		 * 핸들러의 매개변수 타입은 개발자가 작성하니까 어떻게 될 지 알 수 없음
+		 * 값을 가공할 때 보통 MemberDTO member 이런 식으로 적는 경우가 많겠지?
+		 * 
+		 * -> HandlerAdaptor의 판단 방법 주석 확인
 		 * 
 		 */
 		
+		// 우리는 이제 member 객체를 가지고 뭘 해야함? 로그인이니까 DB 서버 가서 사용자가 입력한 ID와 같은 아이디 값이 있는지 memberId 컬럼 보고, 사용자가 입력한 pwd와 같은 pwd값이 있는지 memberpwd 컬럼 보고
+		// 일치하는게 있다면 조회 결과를 가져와서 컨트롤러까지 들고온 다음 로그인된 사용자 정보를 세션스코프에 setAttribute 등으로 추가
+		// 일치하는게 없다면 알려줘야지 뭐 이상하다든지 무슨 방법을 통해서...
+		// 일단 그걸 하려면 뭘 적어야하나요? 여기서 직접 하지않으니까 요청처리 하기위해서 Service 불러서 뭐 했었음
+
 		return "main";
 		
 	}
