@@ -1,14 +1,20 @@
 package com.kh.spring.member.controller;
 
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.kh.spring.member.model.dto.MemberDTO;
+import com.kh.spring.member.model.service.MemberService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j // loggin, log -> 기록 남기는것, 롬복 설치해야 사용 가능, 롬복이 제공함
 @Controller
+// @RequestMapping("/member")
 public class MemberController {
 	
 	/*
@@ -194,10 +200,40 @@ public class MemberController {
 	 * 근데 이거 이제 스프링한테 위임하고 스프링이 제어하기로 했음
 	 * private MemberService memberService 이까진 우리가 하더라도 = new MemberService(); 이건 우리가 안할듯
 	 */
-	private MemberService memberService;
 	
+	/*
+	dependency injection 방식 1
+	@Autowired == 필드 인젝션 field injection, 스프링이 알아서 주입, 옛날 개발자들이 편하게 사용하던 방식
+	private MemberService memberService;
+	작업속도는 빠르다
+	*/
+	
+	// DI 방식 2
+	/*
+	@Autowired == 세터 인젝션
+	public void setMemberService() {
+		this.memberService = memberService;
+	}
+	1, 2 둘다안씀
+	*/
+	
+	private final MemberService memberService;
+	
+	// 권장방식은 생성자를 통한것
+	@Autowired /* ☆ 권장 방법 ★ */
+	public MemberController(MemberService memberService) {
+		this.memberService = memberService;
+	}
+	// ??? 12:23 DI 방식 두개의 문제점
+	// ??? final이 붙은 변수는 선언과 동시에 초기화를 진행해야함
+	// 객체의 불변성도 지키고 중간에 다른 객체로 변환될 걱정도 없어짐
+	
+	/*
 	@RequestMapping("login")
-	public String login(MemberDTO member) {
+	public String login(MemberDTO member,
+						// HttpServletRequest request
+						HttpSession session,
+						Model model) {
 		// (@ModelAttribute MemberDTO member)
 		
 		// System.out.println("로그인 시 입력한 정보 : " + member);
@@ -215,7 +251,7 @@ public class MemberController {
 		// INFO : com.kh.spring.member.controller.MemberController - Member객체 필드값 확인 ~ MemberDTO(userId=thisiskey, userPwd=thisispassword, userName=null, email=null, enrollDate=null)
 		
 		// 진짜진짜 가보자고
-		/*
+		 *
 		 * 다양한 방법으로 앞단에서 넘어온 핸들러에서 값을 뽑음
 		 * 옛날 다이나믹 프로젝트, getParam, DTO에서 아무것도 안적고 가져오는 방법
 		 * 스프링은 어떻게 알고 이 값을 넣어주는거지? 뭐가필요한지 어떻게 알아? -> 노션확인
@@ -228,15 +264,170 @@ public class MemberController {
 		 * 
 		 * -> HandlerAdaptor의 판단 방법 주석 확인
 		 * 
-		 */
+		 *
 		
 		// 우리는 이제 member 객체를 가지고 뭘 해야함? 로그인이니까 DB 서버 가서 사용자가 입력한 ID와 같은 아이디 값이 있는지 memberId 컬럼 보고, 사용자가 입력한 pwd와 같은 pwd값이 있는지 memberpwd 컬럼 보고
 		// 일치하는게 있다면 조회 결과를 가져와서 컨트롤러까지 들고온 다음 로그인된 사용자 정보를 세션스코프에 setAttribute 등으로 추가
 		// 일치하는게 없다면 알려줘야지 뭐 이상하다든지 무슨 방법을 통해서...
 		// 일단 그걸 하려면 뭘 적어야하나요? 여기서 직접 하지않으니까 요청처리 하기위해서 Service 불러서 뭐 했었음
-
-		return "main";
+		
+		// MemberService 호출하면 됨
+		// memberService.login(member);
+		
+		// 나중에 요청을 처리할 서비스가 바뀐다면? 애노테이션 삭제해서 Bean에서 빼버리면 가능
+		// 원래라면 서비스가 삭제되고 다른 서비스가 생겼으니 컨트롤러 코드를 바뀌어야함
+		// Bean으로 구현하면 서비스가 바뀌었다고 컨트롤러가 바뀌지 않게 된다, 의존성을 낮추고 붙어있던걸 쪼개버림
+		// 1. 컨트롤러 입장에서 실제로 호출할 친구를 구체적으로 만들어서 사용하지 않음
+		// 두 종류의 클래스(기존 서비스, 새 서비스)를 묶을 수 있는 자료형(서비스가 구현할 인터페이스)만 사용
+		// 두 클래스는 interface의 추상메소드를 이용해서 구현
+		// 2. 실제 객체를 우리가 만들지 않고 Bean으로 등록하고 스프링이 알아서 등록하도록 애노테이션 추가작업만 했음(@Autowired)
+		// wire는 줄, 이어주는것, 알아서 wiring하는 과정이라서 Autowiring
+		// Bean으로 등록해놨으니 스프링이 관리할거고, MemberService가 필요한 시점에 자기가 가진 Bean들 중에서 이 타입에 맞는 객체를 대입해준것 = 이걸 와이어링한다고 표현, 그걸 위해 필요한 애노테이션이 @Autowired
+		// -> 이걸 Dependency Injection, 의존성 주입이라고 표현
+		// 실제로 서비스를 의존하고 있었던 기존작업코드, 직접 객체를 생성해서 의존, 타입도 쓰고 객체도 만들었다
+		// 스프링에서는 실제로 사용할 서비스의 타입도 숨기고, 객체 생성도 스프링에게 위임함
+		// 필요한 객체는 스프링에게 받아서 사용, 스프링이 알아서 주입해줌
+		// 이렇게 컨트롤러가 서비스에 의존하고 있던 의존도가 낮아짐, 이게 의존성 주입
+		// 실제 사용할 객체를 개발자가 생성하는것이 아니라 스프링으로부터 주입받아서 사용하는 개념
+		
+		// 서비스에서 정해둔 자료형으로 돌려받을것이 정해져있음
+		MemberDTO loginMember = memberService.login(member);
+		
+		
+		if(loginMember != null) {
+			
+			log.info("로그인 성공");
+			// 앞(header.jsp)에서 넘기는 name 속성값을 가공할 타입의 필드명과 똑같이 쓰면 request handler에서 매개변수에 넣을 때 setter로 알아서 스프링에서 넣어준다
+			// request.getParameter 해서 뽑고 객체 만들고 setter로 값 넣는 작업을 안해도 되니 그거 날아감
+			// 서비스에서도 마찬가지로 Template 안만들고 알아서 만들고 알아서 반납하라고 스프링한테 맡김
+			// 그리고 받아와서 메소드 호출만 하고 끝남
+			// DAO도 마찬가지로 맨날 하던 거 똑같이 함, 자원반납 알아서 하니 그냥 반환했으니 다녀오기만 하면 끝
+			
+			// 받았으니까 응답화면 지정해줘야하는데? 안했는데? 하고나면 그냥 무슨 화면이 나옴
+			// 이거하려면 원래 RequestDispatcher 객체 생성해서 포워딩 해야하는데
+			// 그거안하고 그냥 return "main"; 했는데 우리 메인화면 뜸...!
+			// 얘가 알아서 메인을 띄울까? 아닌데용ㅎ -> 노션 확인
+			
+		} else {
+			log.info("실패");
+		}
+		
+		
+		// 성공하면 우리는 로그인된 사용자의 정보를 세션 스코프에 담는다
+		if(loginMember != null) { // 로그인에 성공
+			
+			// sessionScope에 로그인된 사용자의 정보를 담아줌
+			// HttpSession 타입 객체가 필요함, 브라우저마다 하나씩 생기니까 HttpServletRequest 타입 객체로 getSession 메소드 호출해서 받음
+			// 지금 Request 객체가 없음, 어떻게 담아유? 어차피 넘기는건 DispatcherServlet이 넘기는데
+			// 요청 할때마다 request, response 생김, DS한테 get하면 알아서 adaptor에서 만들어서 넘겨줌, 오전에 해본것임
+			// 필요하면 매개변수에 HttpServletRequest 작성하면 됨 -> 메소드 시그니처에 추가
+			
+			// HttpSession session = request.getSession(); 해야하는데 이렇게 안하고
+			// 만능은 아님, 143개 정도 된다, session 필요하면 필요하다고 매개변수 자료형에 적어주면 받아올 수 있음
+			// 그리고 그냥 담아
+			session.setAttribute("loginMember", loginMember);
+			// 포워딩 할 수 있는데 그러면 요청 url이 그대로 남는다, localhost/spring/login 이렇게
+			// 사용자가 실수로 새로고침 누르면? 로그인요청이 다시 가게된다
+			// 지금처럼 세션에 데이터를 담고 나서 메인을 보여주고싶다면? 포워딩 해줄수도있는데("main" 리턴하면 가까처럼 접두접미 붙여서 전달)
+			// 하나 더 배웠따
+			// 포워딩 방식 보다는 -> sendRedirect
+			// localhost/spring으로 보내면 똑같은 메인화면을 볼 수 있음
+			// 사용자가 /만 보내서 요청을 보낼 수 있도록 하면 되니까 redirection해주는게 좋은데
+			// response 객체가 필요하지만 그거 필요없고
+			return "redirect:/"; // redirect: 을 적고 보내고 싶은 경로 적으면 끝
+			
+		} else { // 뭔가 잘못됐다는 뜻
+			
+			// 실패할 수 있지, 비밀번호 잘못 썼든지 잘못 적었든지
+			// 어떻게 할 지 정해줘야한다
+			// 지정해줄 페이지가 딱히 없음, include에 실패했을 때 보낼 페이지 하나 만들자 -> error_page.jsp
+			// 포워딩은 확정인데 그 이전에 msg를 requestScope에 담아야함
+			
+			// error_page -> 포워딩
+			// reqeustScope에 msg라는 키값으로 로그인 실패입니다 ~~ 담아서 포워딩
+			// requestScope에 setAttribute 하려면 HttpServletRequest 타입 객체가 있어야 거기 담음
+			// 근데 없지롱! 없으니까 매개변수로 받아와야지~ 핸들러 매개변수에 필요한거 달라고 추가
+			// 나중에 핸들러 어댑터로 반환될 때(RequestAdaptor에서 HandlerAdaptor로 돌아갈때 어떤 형태로 가야함?)
+			// -> ModelAndView 타입으로 돌아가야함
+			// 실질적으로 return하고 붙어서 가는것은 view에 들어가는 내용이고, 우리가 requestScope에 담는 값(데이터)은 model에 들어가야함
+			// 그래서 model and view인거임, 반환할 데이터와 화면을 합쳐둔것
+			// 스프링에서 requestScope에 값을 담으려면 HttpServletRequest를 쓰는게 아니라 Model을 씀 -> Model model 추가(얘가 requestScope랑 영역이 같음)
+			// Spring에서는 Model타입을 이용해서 RequestScope에 값을 담음
+			model.addAttribute("msg", "로그인 실패 까비~");
+			
+			// 응답 jsp에 담을 값을 담았으니 포워딩 해야함
+			// 포워딩 할 때 dispatcher servlet에서 view resolver에 간다, 거기에 가면 앞에 /WEB-INF/views 이게 붙음
+			// 뒤에는 .jsp가 붙음
+			// Forwarding
+			// /WEB-INF/views/
+			// .jsp
+			
+			// 우리는 include 밑에 error_page.jsp로 전달할건데
+			// 얘 경로는 /WEB-INF/views/include/error_page.jsp 이것이다
+			// 그럼 우리는 return 해서 전체 경로 중에 앞에 붙을 부분 떼고, 뒤에 확장자 붙을 부분 떼고
+			// include/error_page
+			return "include/error_page";
+			
+		}
+		
+		// return "main";
 		
 	}
+	*/
+	// 다시 구현하려고 전체 주석처리
+	
+	// 반환타입을 바꿔서 다시 구현해보자
+	// 어댑터로 갈 때 무슨 타입으로 돌아가야함?
+	// 두 번째 방법 : 반환타입 ModelAndView타입으로 반환
+	// model은 단독사용 가능, view는 무조건 붙여서 사용
+	
+	// 핸들러에 어떤 요청이 오면 받을 지 애노테이션 달아야함 -> 이것도 보통 여기 메소드 라인에 다는게 아니라 클래스에 달아줌
+	@PostMapping("/login")
+	public ModelAndView login(MemberDTO member,
+							  HttpSession session,
+							  ModelAndView mv) {
+		// ??? 15:43 옛날처럼 어쩌고저쩌고 안하고
+		// 매개변수 자리에 내가 가공하자고 하는, 서비스단에 넘길 때의 타입의 변수를 선언
+		// 이 객체의 필드명과 앞단에서 넘기는 전달값의 key값이 동일해야함
+		// 그래야 DTO를 기본생성자로 객체를 생성하고 key값과 동일한 필드명을 찾아서 세터 메소드를 호출해서 대입해줌
+		// 그러므로 DTO는 기본생성자와 setter가 무조건 들어가야함
+		// VO는 setter가 없으므로(있으면 안되니까) 여기(Spring)부터는 무조건 받는게 DTO가 된다
+		
+		// ModelAndView mv = new ModelAndView();
+		
+		MemberDTO loginMember = memberService.login(member);
+		if(loginMember != null) {
+			
+			// 성공했으면 사용자의 정보를 세션스코프에 담을건데 세션없음
+			// 그럼 매개변수 자리에 세션 필요하다고 써두면 된다~
+			session.setAttribute("loginMember", loginMember);
+			
+			// ModelAndView로 돌아가야하는데 이 메소드 안에 없음.. 만들어도 됨
+			// 그렇지만 매개변수 작성해서 받아올 수 있음
+			
+			// 유지보수 관점에서 쓰는 실무스킬있는데 지금말고 나중에
+			
+			// 아까 반환할 때 return "main"; 이런거 했는데 여기서 viewName 넣어줌
+			mv.setViewName("redirect:/");
+			
+		} else {
+			
+			// 실패는 request객체에 메세지 넣어서 화면지정했는데 이제는 이것도 model and view로 처리
+			// 이거 좋은점 : 메소드 체이닝 가능, 나중에 담을 값 늘어나면 .()으로 추가가능
+			mv.addObject("msg", "로그인실패!")
+			  .setViewName("include/error_page");
+			
+		}
+		
+		return null;
+		
+	}
+	// 기본적으로 우리가 구현할것은 CRUD
+	// INSERT		--> POST ------> /member 요청이 Post로 왔을 때 처리하도록 메소드에 @PostMapping으로 작성
+	// SELECT		--> GET ------> /member 요청이 Get으로 왔을 때 처리하도록 구체화해서 작성할 수 있다
+	// 클래스 레벨에 @RequestMapping("/member") 달면 member 요청이 여기로 온다, 그리고 메소드 매핑을 PostMapping으로 작성함
+	
+	// UPDATE
+	// DELETE
 	
 }
