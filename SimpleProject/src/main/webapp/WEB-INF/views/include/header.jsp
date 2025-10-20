@@ -66,16 +66,23 @@
             </div>
             <div id="header_1_center"></div>
             <div id="header_1_right">
+            
+            <%-- jsp에서 로그인전/후에따라 하고싶은 작업이 다르다 -> JSTL을 써야함(choose는 너무 지엽적이죠?) JSTL 코어 라이브러리의 choose를 써야합니다!라고 명확하게 --%>
+            <c:choose>
+            <c:when test="${ empty sessionScope.loginMember }">
                 <!-- 로그인 전 -->
-                <a href="">회원가입</a>
+                <a href="join">회원가입</a>
                 <a data-toggle="modal" data-target="#loginModal">로그인</a> <!-- 모달의 원리 : 이 버튼 클릭시 data-targer에 제시되어있는 해당 아이디의 div요소를 띄워줌 -->
-                
+            </c:when>
+            <c:otherwise>
                 <!-- 로그인 후 -->
-                <!-- 
-                    <lable>홍길동님 환영합니다</label> &nbsp;&nbsp;
+                    <label>${ sessionScope.loginMember.userName }님 환영합니다</label> &nbsp;&nbsp;
+                    <%-- EL구문을 써야합니다 라고 표현하쇼, 그안에 sessionScope에서 loginMember의 key값에 넣은 memberDTO 객체에 있으니 또 참조해서 userName --%>
+                    <%-- 원리는 이 userName에 맞는 getter인 getUserName 메소드를 호출하는것 --%>
                     <a href="">마이페이지</a>
-                    <a href="">로그아웃</a>
-                -->
+                    <a href="logout">로그아웃</a>
+            </c:otherwise>
+            </c:choose>
             </div>
         </div>
         <div id="header_2">

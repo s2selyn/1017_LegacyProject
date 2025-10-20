@@ -4,6 +4,7 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -396,6 +397,7 @@ public class MemberController {
 		// ModelAndView mv = new ModelAndView();
 		
 		MemberDTO loginMember = memberService.login(member);
+		
 		if(loginMember != null) {
 			
 			// 성공했으면 사용자의 정보를 세션스코프에 담을건데 세션없음
@@ -414,12 +416,13 @@ public class MemberController {
 			
 			// 실패는 request객체에 메세지 넣어서 화면지정했는데 이제는 이것도 model and view로 처리
 			// 이거 좋은점 : 메소드 체이닝 가능, 나중에 담을 값 늘어나면 .()으로 추가가능
+			// addObject로 front에 msg 값 전달 가능
 			mv.addObject("msg", "로그인실패!")
 			  .setViewName("include/error_page");
 			
 		}
 		
-		return null;
+		return mv;
 		
 	}
 	// 기본적으로 우리가 구현할것은 CRUD
@@ -429,5 +432,31 @@ public class MemberController {
 	
 	// UPDATE
 	// DELETE
+	
+	@GetMapping("logout") // a태그로 요청이 오니까 Get 방식임
+	public String logout(HttpSession session) {
+		
+		// sessionScope에 있는 값을 지우면 그게 로그아웃이겠지
+		// 값을 지우려면? sessionScope의 attribute를 지우려면 HttpSession이 필요 -> 매개변수에 작성
+		session.removeAttribute("loginMember");
+		return "redirect:/";
+		// 객체 지향 프로그램에서 기능을 수행하려면 객체가 있어야함
+		// 기능을 수행하려면 메소드를 호출해야함, 메소드를 호출하려면 객체가 가지고 있으니까
+		// 자바의 베이스는 객체, 그걸 다룰 때 제일 중요한건 타입, 값은 어차피 주소
+		
+	}
+	
+	@GetMapping("join")
+	public String joinForm() {
+		// 회원가입 a태그 누르면 이걸로 오게 작업했다
+		
+		// 이 핸들러는 signup.jsp로 포워딩 해줘야함
+		// 포워딩 하려면 포워딩할 JSP파일의 논리적인 경로가 필요함
+		// 이건 슬래시로 시작 /WEB-INF/views/member/signup.jsp <- webapp부터 시작하는 논리적인 경로
+		// 이 경로에서, view resolver에 의해 앞뒤에 붙여주는거 제외하고
+		// member/signup만 작성
+		return "member/signup";
+		
+	}
 	
 }
