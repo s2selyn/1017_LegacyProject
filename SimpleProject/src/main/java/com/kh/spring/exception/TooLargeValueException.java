@@ -9,9 +9,11 @@ public class TooLargeValueException extends RuntimeException {
 	// 버전관리 하라는 뜻인데 안할거임
 	
 	public TooLargeValueException(String message) {
+		
 		// 사용자가 20자 넘는 값을 입력했다면 이 예외를 발생시킬 것이다
 		// 예외발생은 어떻게 하는지? -> 다시 서비스로 감
 		super(message);
+		
 	}
 
 }

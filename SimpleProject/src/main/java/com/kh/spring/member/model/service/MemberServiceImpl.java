@@ -4,6 +4,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.kh.spring.exception.InvalidArgumentsException;
 import com.kh.spring.exception.TooLargeValueException;
 import com.kh.spring.member.model.dao.MemberRepository;
 import com.kh.spring.member.model.dto.MemberDTO;
@@ -58,7 +59,10 @@ public class MemberServiceImpl implements MemberService {
 		if(member == null) {
 			
 			// null이면 id값 체크고뭐고 아무것도 할필요가 없음
-			return;
+			// return;
+			
+			// 여기도 예외처리 추가
+			throw new NullPointerException("잘못된 접근입니다.");
 			
 		}
 		
@@ -69,9 +73,11 @@ public class MemberServiceImpl implements MemberService {
 		// 하나씩 비교해보자(String으로 정규표현식 쓰면 쉬움)
 		// member를 참조해서 getUserId를 또 참조해서 length호출한것으로 비교
 		if(member.getUserId().length() > 20) {
+			
 			throw new TooLargeValueException("아이디 값이 너무 길어용");
 			// throw 하고 우리가 만든 예외 클래스를 객체로 생성해줌
 			// 사용자는 예외 일어난줄 몰라야함 -> 모든 것을 예외처리 해줘야하는데(try-catch) 더욱 스마트한 처리방법이 있음
+			
 		}
 		
 		// 길이만 보는게 아니라 테이블도 생각해야함, pk, not null
@@ -80,7 +86,18 @@ public class MemberServiceImpl implements MemberService {
 		   member.getUserId().trim().isEmpty() ||
 		   member.getUserPwd() == null ||
 		   member.getUserPwd().trim().isEmpty()) {
-			return;
+		
+			// 사용자정의 예외클래스 만들어서 잘 작동하는지 확인했다
+			// 하나더 만들어보자, 유효값 아닐 때 발생시킬 예외 -> exception 패키지에 생성
+			// 솔직히 유효하지 않은 값 발생시킬 예외는 InvalidParamegerException이 있긴함
+			// InvalidArgumentsException 클래스 생성하고 돌아옴
+			
+			// return;
+			
+			throw new InvalidArgumentsException("유효하지 않는 값입니다.");
+			// 공백(스페이스바)만 입력하면 예외발생 의도대로함, 우리는 이거 알아야하지만 사용자는 이런거 보면안됨, 사용자는 예외발생 알수없도록 화면은 사용자가 보여줄것으로 만들어줘야함
+			// -> 예외처리 try-catch 여기저기 해야해? 새로운거 해보자 -> 예외처리기 만들건데 노션확인
+			
 		}
 		
 		// 지금 중복체크 구현안하고 있으니 사용자가 입력한 아이디가 DB에 존재하는지 아닌지도 비교해야함
@@ -90,18 +107,17 @@ public class MemberServiceImpl implements MemberService {
 		// 이제 리턴하지 말고 예외를 발생시켜보자 -> 내가 작성한 내용에 만족하지 못한다면 예외를 발생시켜서
 		// id가 20자가 넘었다면? 20자가 넘을 때 발생할 예외를 발생시키자
 		// 근데 그런 예외가 있나? 없는 것 같은데요... 우리가 직접 예외 클래스를 만들어보자! -> 만들고 와서 20자 넘는 곳 검증하는 곳에서 예외발생 코드작성
+		
 
 	}
 
 	@Override
 	public void update(MemberDTO member) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void delete(MemberDTO member) {
-		// TODO Auto-generated method stub
 
 	}
 
