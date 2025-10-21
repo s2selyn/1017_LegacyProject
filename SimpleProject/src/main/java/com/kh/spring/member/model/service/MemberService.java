@@ -35,7 +35,7 @@ public interface MemberService {
 	void update(MemberDTO member, HttpSession session);
 	
 	// 탈퇴
-	void delete(MemberDTO member);
+	void delete(String userPwd, HttpSession session);
 	
 	// 아무튼 서비스를 이번에 인터페이스로 만들어봤다. 이걸로 작업을 처리하게 할 수는 없음
 	// 이걸로 뭐함? 왜만들어? 어디다가 써? 다형성을 적용하려고! 부모객체(타입)로 사용하기 위해서, 타입 쓰려고, 타입이 필요하니까

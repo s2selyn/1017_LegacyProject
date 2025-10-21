@@ -1,14 +1,12 @@
 package com.kh.spring.member.controller;
 
-import java.io.UnsupportedEncodingException;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kh.spring.member.model.dto.MemberDTO;
@@ -204,6 +202,7 @@ public class MemberController {
 	 * -> 이게 무슨 작업? 변수를 선언하고 객체를 생성하는 과정
 	 * 근데 이거 이제 스프링한테 위임하고 스프링이 제어하기로 했음
 	 * private MemberService memberService 이까진 우리가 하더라도 = new MemberService(); 이건 우리가 안할듯
+	 * 
 	 */
 	
 	/*
@@ -582,6 +581,15 @@ public class MemberController {
 		memberService.update(member, session);
 		
 		return "redirect:mypage"; // 마이페이지로 다시 보낼것임
+		
+	}
+	
+	@PostMapping("delete")
+	public String delete(@RequestParam(value="userPwd") String userPwd,
+						 HttpSession session) {
+		
+		memberService.delete(userPwd, session);
+		return "redirect:/";
 		
 	}
 	

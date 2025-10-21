@@ -1,5 +1,6 @@
 package com.kh.spring.member.model.dao;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -38,5 +39,8 @@ public interface MemberMapper {
 	// 이건 마이바티스 3버전부터 제공되는 애노테이션이라 2버전 이하 쓰면 이것도 못쓰긴함
 	// 구닥다리는 좋지않은표현일수도 있지, 회사전체의 생산성을 생각하면 효율성이 좋을 수 있다, 구닥다리가 안좋다는게 아니고 오래된 기술이라는 단순한 의미
 	// 나쁜건 없어 기술 선택에는 항상 이유가 있어
+	
+	@Delete("DELETE FROM MEMBER WHERE USER_ID = #{userId}")
+	int delete(String userId);
 
 }
