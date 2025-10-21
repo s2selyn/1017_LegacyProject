@@ -15,8 +15,28 @@
 		       MEMBER
 		 WHERE
 		       USER_ID = #{userId}
+		       <!--
 		   AND
 		       USER_PWD = #{userPwd}
+		       -->
 	</select>
+	<!-- 암호화했으므로 평문과 암호문이 일치하지 않으므로 이 로그인 select문을 쓸 수 없게 되었음 -->
+	<!-- ID만 가지고 SELECT 하도록 변경(주석처리) -> 작동은 하겠지만 비밀번호 몰라도 로그인이 되어버림 -->
+	<!-- 다시 서비스로 -->
+	
+	<insert id="signup"
+			parameterType="com.kh.spring.member.model.dto.MemberDTO">
+		INSERT
+		  INTO
+		       MEMBER
+		VALUES
+		       (
+		       #{userId}
+		     , #{userPwd}
+		     , #{userName}
+		     , #{email}
+		     , SYSDATE
+		       )
+	</insert>
 
 </mapper>

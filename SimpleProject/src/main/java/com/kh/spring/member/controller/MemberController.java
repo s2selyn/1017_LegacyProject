@@ -507,8 +507,10 @@ public class MemberController {
 		
 		memberService.signUp(member);
 		// 지금 signUp 반환형 void, 실패했을때는 여기 못돌아오게 해야함
+		// 여기서 반환받지 않으므로 service에서 꼼꼼히 해줘야한다, 예외처리기에서 SQL 예외도 추가하면된다
 		
-		return "redirect:join";
+		// return "redirect:join";
+		return "main";
 		
 	}
 	

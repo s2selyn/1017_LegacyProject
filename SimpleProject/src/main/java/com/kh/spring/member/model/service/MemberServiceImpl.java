@@ -67,7 +67,19 @@ public class MemberServiceImpl implements MemberService {
 		 *  
 		 */
 		
-		return memberRepository.login(sqlSession, member);
+		// ver 0.1
+		// return memberRepository.login(sqlSession, member);
+		
+		// 사용자는 평문을 입력하지만 실제 DB컬럼에는 암호문이 들어있기 때문에
+		// 비밀번호를 비교하는 SELECT문은 사용할 수 없음 -> 매퍼 수정
+		MemberDTO loginMember = memberRepository.login(sqlSession, member);
+		// 일단 아이디만으로 조회해오기
+		// 매개변수로 받아온 member에는? 로그인할때 사용자가 입력한 비밀번호 평문이 들어있음
+		log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd());
+		log.info("DB에 저장된 암호화된 암호문 : {}", loginMember.getUserPwd());
+		// DB에서 저장된 암호문을 같이 까보자!
+		
+		return null;
 		
 	}
 
@@ -148,10 +160,18 @@ public class MemberServiceImpl implements MemberService {
 		// 위에 가서 작성하고 오셔
 		
 		// DAO로 가서 INSERT하기전에 비밀번호 암호화하기
-		log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd()); // 생 plaintext는 암호화전 그대로인거 -> getUserPwd
+		// log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd()); // 생 plaintext는 암호화전 그대로인거 -> getUserPwd
 		
 		// 암호화하기 == 인코더가지고 .encode()호출
-		log.info("암호화한 후 : {}", passwordEncoder.encode(member.getUserPwd()));
+		// log.info("암호화한 후 : {}", passwordEncoder.encode(member.getUserPwd()));
+		// DB에는 암호화된것이 들어가있어야한다, 안그러면 금융치료당함.. 벌금으로(정보통신망법, 개인정보보호법)
+		// 우리 DB에 들어가있는것들도 바꿔줄까? DBeaver 다녀오기
+		// 이렇게 하고 MemberVO만들어서 하는데, 시간 오래걸려서 DTO가지고 할거임
+		String encPwd = passwordEncoder.encode(member.getUserPwd());
+		member.setUserPwd(encPwd); // 암호화한 값으로 다시 넣어주자
+		
+		// 그리고 나서 DAO 호출
+		memberRepository.signup(sqlSession, member);
 
 	}
 

@@ -20,5 +20,14 @@ public class MemberRepository {
 		// mapper 없으니 생성
 		
 	}
+	
+	// signup으로 회원가입, 나중에 뭘로 돌아갈까? int
+	public int signup(SqlSessionTemplate sqlSession, MemberDTO member) {
+		
+		// insert인걸요? 이건 반환타입 두개뿐이지
+		return sqlSession.insert("memberMapper.signup", member);
+		// 여기까지만 하고 게으름 처리하러가자 게으름 아님 생산성 향상임~
+		
+	}
 
 }
