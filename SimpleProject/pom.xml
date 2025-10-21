@@ -269,6 +269,31 @@
 		    <scope>provided</scope>
 		</dependency>
 		<!-- 추가하고 세팅 필요, IDE에 설정하는 거라서 -> 메이븐 설치폴더로 간다 -->
+		
+		<!-- 3. SpringSecurity에서 제공하는 암호화 알고리즘 모듈 -->
+		<!-- 슬랙 수업자료에서 받아오기, 암호화는 개발자가 하는거 아니고 수학자들이 함 -->
+		<!-- 웹개발 시 암호화 알고리즘 선택을 해야하는데, Bcrypt 알고리즘이 있고(전통의 근본, 유명한 보안회사에서도 사용할만큼 검증받은 확실한 암호화 알고리즘, 해싱 알고리즘 돌려서 단방향, 원본값과 결과값만 있고 과정을 숨김, 되돌리기 힘들다) -->
+		<!-- 암호화만 돌리면 무한 돌려서 결과값으로 거꾸로 돌려서 유추가능하니까 그냥 돌리지는 않고 소금을 뿌림(salt값), 이건 현재 시간 기반으로 값을 만들어서 임의값을 더하고 암호화 알고리즘 돌려서 값을 만든다 -->
+		<!-- 아무튼 특징이 단방향 암호화, 평문값을 얻을 수 없다, 근본 Bcrypt, 가입, 로그인 둘다 쓴다 -->
+		<!-- MZ들 쓰는 암호화 Argon2, 해싱대회 우승해서 젊은거 찾아쓴다고 좋아한다네요, 떠오르는 샛별 -->
+		<!-- 아무튼 둘다 스프링 시큐리티에 들어있으니 쓰고싶은거 골라서 쓰면 됨 -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<version>5.5.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>5.5.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>5.5.2</version>
+		</dependency>
 		    
 	</dependencies>
     <build>

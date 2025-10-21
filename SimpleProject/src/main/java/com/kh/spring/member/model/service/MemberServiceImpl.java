@@ -1,7 +1,7 @@
 package com.kh.spring.member.model.service;
 
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kh.spring.exception.InvalidArgumentsException;
@@ -9,22 +9,45 @@ import com.kh.spring.exception.TooLargeValueException;
 import com.kh.spring.member.model.dao.MemberRepository;
 import com.kh.spring.member.model.dto.MemberDTO;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor // 생성자 주입을 통해 필드들에 의존성 주입되는데 개발자가 할필요없고 롬복이 알아서
 public class MemberServiceImpl implements MemberService {
 	
-	@Autowired
-	private SqlSessionTemplate sqlSession;
+	// @Autowired
+	private final SqlSessionTemplate sqlSession;
 	// 스프링이 관리하는 Bean이므로 주입받아야함 -> 방법 3개정도 있음
 	// 일단 쉬운거 -> @Autowired 추가
 	// 옛날 아저씨들 쓰는 방식, getSqlSession도 안해도 되고 close도 얘가 알아서 해주니 안해줘도됨
 	// 그러고나서 해야할일은 DAO호출인데 DAO가 없으니 생성ㄱㄱ
 	
 	// 서비스에서도 DAO를 주입받아서 써야하니까 필드로 둬야하고 간단한 작업으로 구현
+	// @Autowired
+	private final MemberRepository memberRepository;
+	
+	// 암호화 주입받기 위한 필드선언
+	// @Autowired
+	private final BCryptPasswordEncoder passwordEncoder;
+	// 어제 한거 필드, 세터, 생성자 주입 이렇게 세가지였음 -> 권장은 생성자였죠? 늘어날때마다 귀찮은데...? 처음에야 그냥 만들겠지만 나중에 계속 작업해야함
+	// 그렇지만 이렇게 해야 객체의 불변성이 보장되니까 이게 권장사항임! 실무에서는 잘 지켜지지 않을 수 있음
+	// 필드에 기존에 달려있던 @Autowired 애노테이션 지우고 final로 선언하고 생성자주입방식
+	/*
 	@Autowired
-	private MemberRepository memberRepository;
+	public MemberServiceImpl(SqlSessionTemplate sqlSession,
+							 MemberRepository memberRepository,
+							 BCryptPasswordEncoder passwordEncoder) {
+							 
+		this.sqlSession = sqlSession;
+		this.memberRepository = memberRepository;
+		this.passwordEncoder = passwordEncoder;
+		
+	}
+	*/
+	// 이거마저 귀찮으니까 롬복에서 만들어주는걸로 할 수 있음 -> 클래스에 애노테이션 추가 @RequiredArgsConstructor
+	// 그럼 @Autowired 안달아도 생성자주입으로 권장방식 사용가능
 
 	@Override
 	public MemberDTO login(MemberDTO member) {
@@ -108,6 +131,27 @@ public class MemberServiceImpl implements MemberService {
 		// id가 20자가 넘었다면? 20자가 넘을 때 발생할 예외를 발생시키자
 		// 근데 그런 예외가 있나? 없는 것 같은데요... 우리가 직접 예외 클래스를 만들어보자! -> 만들고 와서 20자 넘는 곳 검증하는 곳에서 예외발생 코드작성
 		
+		// 아이디 중복체크 생략(이거도 select 한번 해오는거니까 뭐 직접 해보쇼)
+		
+		// 실제로는 뭐 이런 난관 넘기는거 정규표현식으로 하것지 "".matches() 이런식으로 메소드 호출해서
+		// 다 통과했다고 치자! 이제 뭐함?
+		// DAO로 가서 INSERT하기
+		// 우리 이번에 회원가입 할 때 무슨작업 추가하기로 했더라...? 암호화! Password Encryption
+		// 이거 하려면 암호화 알고리즘이 필요하다, 스프링 시큐리티에서 제공하는 암호화 알고리즘 모듈을 사용해보자
+		// pom.xml에 dependency 태그 추가하고 오기
+		
+		// 암호화 알고리즘은 클래스만 바꿔주면 쓸 수 있음, 지금은 검증된 근본부터 써보자 -> Bcrypt
+		// 그리고 bean 설정용 xml 파일도 직접 만들어보자(root-context.xml에서 작업해도 되긴함)
+		// 만들어서 Bean 등록까지 하고왔음
+		
+		// 의존성 주입 받아서 써야함 -> 여기서 애노테이션 쓰려면 필드 선언 먼저 해야한다
+		// 위에 가서 작성하고 오셔
+		
+		// DAO로 가서 INSERT하기전에 비밀번호 암호화하기
+		log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd()); // 생 plaintext는 암호화전 그대로인거 -> getUserPwd
+		
+		// 암호화하기 == 인코더가지고 .encode()호출
+		log.info("암호화한 후 : {}", passwordEncoder.encode(member.getUserPwd()));
 
 	}
 
