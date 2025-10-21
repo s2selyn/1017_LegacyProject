@@ -398,7 +398,7 @@ public class MemberController {
 	public ModelAndView login(MemberDTO member,
 							  HttpSession session,
 							  ModelAndView mv) {
-		// ??? 15:43 옛날처럼 어쩌고저쩌고 안하고
+		// 옛날처럼 HttpServletRequest 타입 객체 받아서 거기서 getParameter 해서 값 뽑아서 쓰는건 이제 안하고 스프링 배웠으니까 HandlerAdapter 이용할거임
 		// 매개변수 자리에 내가 가공하자고 하는, 서비스단에 넘길 때의 타입의 변수를 선언
 		// 이 객체의 필드명과 앞단에서 넘기는 전달값의 key값이 동일해야함
 		// 그래야 DTO를 기본생성자로 객체를 생성하고 key값과 동일한 필드명을 찾아서 세터 메소드를 호출해서 대입해줌
@@ -514,7 +514,6 @@ public class MemberController {
 		
 	}
 	
-	// ??? 취향의 영역 15:14
 	@GetMapping("mypage") // 마이페이지 매핑값 작성, a태그니까 get방식, mv가 좋으시다네여 어차피 mv로 돌아갈거고
 	public String myPage() {
 		

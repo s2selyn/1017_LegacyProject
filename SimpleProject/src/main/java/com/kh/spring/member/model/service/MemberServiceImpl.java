@@ -183,7 +183,7 @@ public class MemberServiceImpl implements MemberService {
 	private MemberDTO validateLoginMember(MemberDTO loginMember, String userPwd) {
 		// 일단 loginMember가 있어야하고, getUserPwd 하기 위해서 member 객체도 필요하므로 매개변수 작성
 		
-		// 코드 복붙 -> ??? 14:18 작성법 확인
+		// 코드 복붙
 		// select 로직과 검증 로직을 분리했음, 책임을 분리해서 유지보수가 용이해짐
 		if(loginMember == null) {
 			throw new UserIdNotFoundException("아이디 또는 비밀번호가 틀림");
@@ -356,7 +356,6 @@ public class MemberServiceImpl implements MemberService {
 		// 서비스가 가는게 아니라 Mapper가 가는거니까 mapper로 호출, sqlSession도 넘길 필요가 없음
 		int result = mapper.update(member);
 		// 매퍼 다녀옴
-		// ??? 16:34
 		
 		if(result != 1) {
 			
