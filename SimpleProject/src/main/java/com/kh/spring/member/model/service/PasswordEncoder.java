@@ -16,7 +16,7 @@ public class PasswordEncoder {
 	}
 	
 	public boolean matches(String rawPassword, String encodePassword) {
-		return passwordEncoder.matches(rawPassword, rawPassword);
+		return passwordEncoder.matches(rawPassword, encodePassword); // 여기 매개변수 잘못 전달해서 문제 생겼음
 	}
 	
 	// 암호화 알고리즘에 대한 책임을 이곳에서 담당하고 있음

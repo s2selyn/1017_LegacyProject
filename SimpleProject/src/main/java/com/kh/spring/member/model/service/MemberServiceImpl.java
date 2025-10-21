@@ -1,13 +1,9 @@
 package com.kh.spring.member.model.service;
 
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.kh.spring.exception.InvalidArgumentsException;
-import com.kh.spring.exception.TooLargeValueException;
 import com.kh.spring.exception.UserIdNotFoundException;
-import com.kh.spring.member.model.dao.MemberRepository;
+import com.kh.spring.member.model.dao.MemberMapper;
 import com.kh.spring.member.model.dto.MemberDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -48,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
 	 */
 	
 	// @Autowired
-	private final SqlSessionTemplate sqlSession;
+	// private final SqlSessionTemplate sqlSession;
 	// 스프링이 관리하는 Bean이므로 주입받아야함 -> 방법 3개정도 있음
 	// 일단 쉬운거 -> @Autowired 추가
 	// 옛날 아저씨들 쓰는 방식, getSqlSession도 안해도 되고 close도 얘가 알아서 해주니 안해줘도됨
@@ -56,7 +52,7 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 서비스에서도 DAO를 주입받아서 써야하니까 필드로 둬야하고 간단한 작업으로 구현
 	// @Autowired
-	private final MemberRepository memberRepository;
+	// private final MemberRepository memberRepository;
 	
 	// 암호화 주입받기 위한 필드선언
 	// @Autowired
@@ -79,6 +75,12 @@ public class MemberServiceImpl implements MemberService {
 	*/
 	// 이거마저 귀찮으니까 롬복에서 만들어주는걸로 할 수 있음 -> 클래스에 애노테이션 추가 @RequiredArgsConstructor
 	// 그럼 @Autowired 안달아도 생성자주입으로 권장방식 사용가능
+	
+	// 검증클래스 책임 분리하고 주입받기 위한 필드선언
+	private final MemberValidator validator;
+	
+	// Mapper 인터페이스로 책임분리하고 필드 주석처리
+	private final MemberMapper mapper; // 만들어둔 인터페이스로 주입받기 위한 필드
 
 	@Override
 	public MemberDTO login(MemberDTO member) {
@@ -103,7 +105,7 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 사용자는 평문을 입력하지만 실제 DB컬럼에는 암호문이 들어있기 때문에
 		// 비밀번호를 비교하는 SELECT문은 사용할 수 없음 -> 매퍼 수정
-		MemberDTO loginMember = memberRepository.login(sqlSession, member);
+		// MemberDTO loginMember = memberRepository.login(sqlSession, member);
 		// 일단 아이디만으로 조회해오기
 		// 매개변수로 받아온 member에는? 로그인할때 사용자가 입력한 비밀번호 평문이 들어있음
 		// 1절 : ID만으로 조회, passwordEncoder로 비밀번호 검증할거임, 만약에 id 조회결과가 없다면?
@@ -112,7 +114,10 @@ public class MemberServiceImpl implements MemberService {
 		 * -> Exception 클래스 새러 생성
 		 * 
 		 */
+		MemberDTO loginMember = mapper.login(member);
+		// 인터페이스로 수정하고 반영
 		
+		/*
 		// -----
 		if(loginMember == null) {
 			
@@ -133,8 +138,8 @@ public class MemberServiceImpl implements MemberService {
 		}
 		// -----
 		
-		log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd());
-		log.info("DB에 저장된 암호화된 암호문 : {}", loginMember.getUserPwd());
+		// log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd());
+		// log.info("DB에 저장된 암호화된 암호문 : {}", loginMember.getUserPwd());
 		// DB에서 저장된 암호문을 같이 까보자!
 		// 암호문이 있으면 만들때 사용한 salt값 사용가능
 		// 버전을 보면 어떤 버전의 알고리즘을 알수있고, 횟수도 알고리즘 몇번 돌렸는지 알수있음
@@ -163,8 +168,39 @@ public class MemberServiceImpl implements MemberService {
 		// 아이디가 틀리고 비밀번호가 틀리고 이렇게 알려주면 보안상 별로 좋은게 아님, 공격자가 메세지를 받고 있는 아이디구나, 해서 비밀번호만 바꿔서 공격하는 식으로 악용가능
 		// 명확하게 알려주는건 별로 좋은 방법이 아니게 된다. 보안적인 측면을 잘 고려하면 아이디 또는 비밀번호가 잘못되었다고 알려줌, 뭐가 잘못된지 없는지 모르게 하기 위해서
 		// 아이디 유무는 중복체크 보면 알 수 있으니 허점이 있긴 하지만... 아무튼 그런거 고려해서 메세지 수정
+		*/
+		// 메소드로 책임분리하고 주석처리
+		
+		return validateLoginMember(loginMember, member.getUserPwd());
 		
 	}
+	
+	// 메소드 분리로 책임분리
+	// 여기서만 부를거니까 바깥에 보일 필요가 없음
+	private MemberDTO validateLoginMember(MemberDTO loginMember, String userPwd) {
+		// 일단 loginMember가 있어야하고, getUserPwd 하기 위해서 member 객체도 필요하므로 매개변수 작성
+		
+		// 코드 복붙 -> ??? 14:18 작성법 확인
+		// select 로직과 검증 로직을 분리했음, 책임을 분리해서 유지보수가 용이해짐
+		if(loginMember == null) {
+			throw new UserIdNotFoundException("아이디 또는 비밀번호가 틀림");
+		}
+		
+		// log.info("평문 : {}, 암호문 : {}", userPwd, loginMember.getUserPwd());
+		
+		if(passwordEncoder.matches(userPwd, loginMember.getUserPwd())) {
+			
+			// log.info("여기가 문제겠지?"); -> PasswordEncoder 클래스 수정
+			return loginMember;
+			
+		}
+		
+		return null;
+		
+	}
+	// 해놓고보니 서비스는 멤버 CRUD 해야하는건데 이 메소드는 또 여기 있으면 안된다, 책임이 또 생겼으니까(검증로직 수정하면 얘도 수정되어야함)
+	// -> 이건 또 방빼서 나가야함, 헷갈리니까 signUp 검증 메소드 코드 분리하자
+	// insert 하는건데 검증하고 있으니까 -> service 클래스 생성
 
 	@Override
 	public void signUp(MemberDTO member) {
@@ -174,49 +210,52 @@ public class MemberServiceImpl implements MemberService {
 		// 유효값 검증
 		
 		// 일단 넘어온 member가 null(객체가 만들어지지않음)이면 넘어갈 필요도 없고 유효값 체크할 필요도 없음
-		if(member == null) {
-			
-			// null이면 id값 체크고뭐고 아무것도 할필요가 없음
-			// return;
-			
-			// 여기도 예외처리 추가
-			throw new NullPointerException("잘못된 접근입니다.");
-			
-		}
-		
-		// null이 아니었다는것은 객체가 들어왔다는 뜻
-		// 그럼 이제 필드값에 대한 검증이 있어야함
-		// 일단 정규표현식 쓰면 좀 쉬워지니까 일부러 복잡하게 해보자
-		// 예를들어서 id값이 20자가 넘으면 안된다고 가정
-		// 하나씩 비교해보자(String으로 정규표현식 쓰면 쉬움)
-		// member를 참조해서 getUserId를 또 참조해서 length호출한것으로 비교
-		if(member.getUserId().length() > 20) {
-			
-			throw new TooLargeValueException("아이디 값이 너무 길어용");
-			// throw 하고 우리가 만든 예외 클래스를 객체로 생성해줌
-			// 사용자는 예외 일어난줄 몰라야함 -> 모든 것을 예외처리 해줘야하는데(try-catch) 더욱 스마트한 처리방법이 있음
-			
-		}
-		
-		// 길이만 보는게 아니라 테이블도 생각해야함, pk, not null
-		// 무조건 id, pwd, name 컬럼에는 값이 있어야함
-		if(member.getUserId() == null ||
-		   member.getUserId().trim().isEmpty() ||
-		   member.getUserPwd() == null ||
-		   member.getUserPwd().trim().isEmpty()) {
-		
-			// 사용자정의 예외클래스 만들어서 잘 작동하는지 확인했다
-			// 하나더 만들어보자, 유효값 아닐 때 발생시킬 예외 -> exception 패키지에 생성
-			// 솔직히 유효하지 않은 값 발생시킬 예외는 InvalidParamegerException이 있긴함
-			// InvalidArgumentsException 클래스 생성하고 돌아옴
-			
-			// return;
-			
-			throw new InvalidArgumentsException("유효하지 않는 값입니다.");
-			// 공백(스페이스바)만 입력하면 예외발생 의도대로함, 우리는 이거 알아야하지만 사용자는 이런거 보면안됨, 사용자는 예외발생 알수없도록 화면은 사용자가 보여줄것으로 만들어줘야함
-			// -> 예외처리 try-catch 여기저기 해야해? 새로운거 해보자 -> 예외처리기 만들건데 노션확인
-			
-		}
+//		if(member == null) {
+//			
+//			// null이면 id값 체크고뭐고 아무것도 할필요가 없음
+//			// return;
+//			
+//			// 여기도 예외처리 추가
+//			throw new NullPointerException("잘못된 접근입니다.");
+//			
+//		}
+//		
+//		// null이 아니었다는것은 객체가 들어왔다는 뜻
+//		// 그럼 이제 필드값에 대한 검증이 있어야함
+//		// 일단 정규표현식 쓰면 좀 쉬워지니까 일부러 복잡하게 해보자
+//		// 예를들어서 id값이 20자가 넘으면 안된다고 가정
+//		// 하나씩 비교해보자(String으로 정규표현식 쓰면 쉬움)
+//		// member를 참조해서 getUserId를 또 참조해서 length호출한것으로 비교
+//		if(member.getUserId().length() > 20) {
+//			
+//			throw new TooLargeValueException("아이디 값이 너무 길어용");
+//			// throw 하고 우리가 만든 예외 클래스를 객체로 생성해줌
+//			// 사용자는 예외 일어난줄 몰라야함 -> 모든 것을 예외처리 해줘야하는데(try-catch) 더욱 스마트한 처리방법이 있음
+//			
+//		}
+//		
+//		// 길이만 보는게 아니라 테이블도 생각해야함, pk, not null
+//		// 무조건 id, pwd, name 컬럼에는 값이 있어야함
+//		if(member.getUserId() == null ||
+//		   member.getUserId().trim().isEmpty() ||
+//		   member.getUserPwd() == null ||
+//		   member.getUserPwd().trim().isEmpty()) {
+//		
+//			// 사용자정의 예외클래스 만들어서 잘 작동하는지 확인했다
+//			// 하나더 만들어보자, 유효값 아닐 때 발생시킬 예외 -> exception 패키지에 생성
+//			// 솔직히 유효하지 않은 값 발생시킬 예외는 InvalidParamegerException이 있긴함
+//			// InvalidArgumentsException 클래스 생성하고 돌아옴
+//			
+//			// return;
+//			
+//			throw new InvalidArgumentsException("유효하지 않는 값입니다.");
+//			// 공백(스페이스바)만 입력하면 예외발생 의도대로함, 우리는 이거 알아야하지만 사용자는 이런거 보면안됨, 사용자는 예외발생 알수없도록 화면은 사용자가 보여줄것으로 만들어줘야함
+//			// -> 예외처리 try-catch 여기저기 해야해? 새로운거 해보자 -> 예외처리기 만들건데 노션확인
+//			
+//		}
+// 클래스로 책임분리하고 주석처리
+		// 롬복으로 주입받아서 사용해야하니까 필드선언은 위에 작성하고 여기에서 호출
+		validator.validatedMember(member);
 		
 		// 지금 중복체크 구현안하고 있으니 사용자가 입력한 아이디가 DB에 존재하는지 아닌지도 비교해야함
 		// 이런 식으로 작업하면 나중에 사용자에게 알려줄 수 있나? 아이디 없어, 입력안했어 이런건 리턴만 해서는 알려줄 수 없음
@@ -254,12 +293,50 @@ public class MemberServiceImpl implements MemberService {
 		member.setUserPwd(encPwd); // 암호화한 값으로 다시 넣어주자
 		
 		// 그리고 나서 DAO 호출
-		memberRepository.signup(sqlSession, member);
+		// memberRepository.signup(sqlSession, member);
+		mapper.signup(member);
+		// 인터페이스로 수정하고 반영
+		
+		// 이제 sqlSession을 넘길 필요도 없이 스프링이 넘겨준다
+		// 이건 단순 SQL문에만 사용가능, resultMap 필요하거나 조인, 서브쿼리 이런거 복잡해서 애매함
+		// 이렇게 하고 root-context.xml에서 설정 추가함
 
 	}
 
 	@Override
 	public void update(MemberDTO member) {
+		
+		// 여기부터 이제 본격적인 개발자의 영역
+		// 내가 생각하는 update는 어떻게 동작해야할까?
+		// sql문을 미리 써보고 member를 넘겼음
+		// 앞에서 넘긴 값이랑 지금 로그인된 사용자가 일치한다는 보장이 없음
+		// 브라우저에서 값을 수정해서 보내버릴 수 있음, readonly 이런게 의미가 없다
+		// 나쁜맘 먹으면 얼마든지 수정가능
+		
+		// 해야 할 일들
+		// 1. 앞단에서 넘어온 ID값과 현재 로그인된 사용자의 ID값이 일치하는가?
+		
+		// 2. 실제 DB에 ID값이 존재하는 회원인가?
+		
+		// 3. USERNAME 컬럼에 넣을 값이 USERNAME 컬럼 크기보다 크지 않은가?
+		
+		// 4. EMAIL 컬럼에 넣을 값이 EMAIL 컬럼 크기보다 크지않은가?
+		
+		// OPTIONAL : (EMAIL컬럼에 넣을 값이 실제 EMAIL형식과 일치하는가?) -> 이메일 형식 아니어도 넣어주는 사이트들이 있음
+		
+		// 5. DB가서 UPDATE
+		
+		// 6. 성공환 회원의 정보로 SessionScope에 존재하는 loginMember키값의 Member객체 필드값 갱신해주기
+		
+		// 실질적으로 개발자가 해야할 일들을 생각해서 작업하는 영역, 제약조건도 필요하다
+		// 이렇게 해도 문제생기고 뚫고 들어와서 데이터 망가지고 함
+		// 앞에까지는 방법에 중점이었다면 여기부터는 세심하게 생각하고 고려해서 코드를 짜야함, 이런것들이 중요
+		// 솔직히 서비스도 interface부터 뜯어고쳐야함, 여기서 HttpSession이 필요함, 거기서 뽑아서 검증(1)하고 덮어쓰기(6)해서 보내줘야함
+		// 여기서도 세션 주입받아서 사용가능, scope 메소드 써서 주입받아서 사용할수도 있고
+		// 실무에서는 컨트롤러에서 받아서 넘겨주는 방식을 선호한다
+		// 여기서 세션을 받으면 여러 사용자에 의한 충돌이 생길 수 있음
+		// 각 요청에 의해 세션이 생기므로 컨트롤러에서 넘겨서 사용하는것을 권장함 -> 컨트롤러에서 매개변수 작성
+		// 여기서 세션만드는건 또 DB 업데이트랑 상관없는 영역이니까, 비즈니스 로직은 아님 세션만들고 받아오는것이 그렇지, 그러므로 컨트롤러에서 하는걸 권장
 
 	}
 

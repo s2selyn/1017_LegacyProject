@@ -79,7 +79,7 @@
                     <label>${ sessionScope.loginMember.userName }님 환영합니다</label> &nbsp;&nbsp;
                     <%-- EL구문을 써야합니다 라고 표현하쇼, 그안에 sessionScope에서 loginMember의 key값에 넣은 memberDTO 객체에 있으니 또 참조해서 userName --%>
                     <%-- 원리는 이 userName에 맞는 getter인 getUserName 메소드를 호출하는것 --%>
-                    <a href="">마이페이지</a>
+                    <a href="mypage">마이페이지</a>
                     <a href="logout">로그아웃</a>
             </c:otherwise>
             </c:choose>

@@ -514,4 +514,74 @@ public class MemberController {
 		
 	}
 	
+	// ??? 취향의 영역 15:14
+	@GetMapping("mypage") // 마이페이지 매핑값 작성, a태그니까 get방식, mv가 좋으시다네여 어차피 mv로 돌아갈거고
+	public String myPage() {
+		
+		// 가입했을때의 무언가가 화면상에 출력되어야한다
+		// 얘가 해야할일 -> jsp로 포워딩
+		// 이건 담을게 없으니 String이 낫겠다 이걸로 변경
+		return "member/my_page"; // 아직 없는데 이렇게 만들거임
+		
+	}
+	
+	// 커맨드 객체 방식 쓸거고 post방식
+	@PostMapping("edit")
+	public String edit(MemberDTO member, HttpSession session) {
+		// 매개변수에서 @ModelAttribute가 생략된 형태
+		
+		/*
+		 * log.info 해보는 이 단계에서 검증할 수 있는게 세개정도 있다
+		 * 
+		 * 1_1) 404 발생 : mapping값 확인하기(-> 매핑값 잘못썼군)
+		 * 404는 매핑값 오타, my_page.jsp와 여기의 @PostMapping 두군데가 달라서 그렇슴
+		 * org.springframework.web.servlet.PageNotFound
+		 * 
+		 * 1_2) 405 발생 : mapping값 잘씀 GET/POST 를 잘못적었을 때(-> 메소드 잘못썼군)
+		 * my_page.jsp에서 method="get"으로 보내놓고 뒤에서 post로 받고 있으면(@PostMapping으로 받고있다)
+		 * 또는 앞에서 post로 보내고 뒤에서 get으로 받을 때 일어난다
+		 * 
+		 * 무슨 문제인지 알고 답을 알면 개발 잘하는거겠죠
+		 * 
+		 * 1_3) 필드에 값이 잘 들어왔나?? - Key값 확인
+		 * 
+		 */
+		log.info("값 찍어보기 : {}", member);
+		// 이게 끝났따, 값도 잘 들어왔다면 다음 단계로 넘어감
+		
+		/*
+		 * 2. SQL문 어떻게 쓰는건지 생각 -> 회원정보 수정이므로 UPDATE, 어느 테이블? MEMBER, 전체가 아니라 특정한명(로그인된사용자)의 정보 수정, WHERE에 어떤 조건을 달아야하지? -> 보편적으로 pk를 떠올려야 한다
+		 * UPDATE => MEMBER => PK?
+		 * 다행히 앞에서 PK 받아옴
+		 * 컬럼도 다섯개뿐, 단순하게 만들었음
+		 * 세개만 넘어온 상태, PK는 못바꾸게 할거니까 업데이트 할건 이름과 이메일
+		 * 그러므로 PK를 조건으로 써야겠다고 생각해야함
+		 * ID PWD NAME EMAIL ENROLLDATE
+		 * 
+		 * 2_1) 매개변수 MemberDTO타입의 memberId필드값 조건
+		 * UPDATE MEMBER SET USER_NAME = 입력한 값, EMAIL = 입력한 값
+		 *  WHERE USER_ID = 넘어온 아이디
+		 * 값을 확인할 때 넘어온 아이디와 입력값 2개 총 세개가 온전히 있는지 체크해야한다
+		 * 
+		 */
+		// 이제 다 있으니까 서비스 가야함
+		
+		/*
+		 * Best Practice
+		 * 
+		 * 실무 권장
+		 * 
+		 * 컨트롤러에서 세션관리를 담당
+		 * 서비스에서는 순수 비즈니스 로직만 구현
+		 * 서비스에서 HttpSession이 필요하다면 인자로 전달
+		 * 
+		 * -> 이 메소드의 매개변수 자리에 작성
+		 * 
+		 */
+		memberService.update(member);
+		
+		return "redirect:mypage"; // 마이페이지로 다시 보낼것임
+		
+	}
+	
 }
