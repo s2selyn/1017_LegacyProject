@@ -6,12 +6,25 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.kh.spring.exception.InvalidArgumentsException;
 import com.kh.spring.exception.TooLargeValueException;
+import com.kh.spring.exception.UserIdNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ControllerAdvice // Global Exception Handler로 사용하기 위한 애노테이션, 예외처리 전문가로 만들어보자
 public class ExceptionHandlingController {
+	
+	@ExceptionHandler(UserIdNotFoundException.class)
+	protected ModelAndView idNotFoundError(UserIdNotFoundException e) {
+		
+		ModelAndView mv = new ModelAndView();
+		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
+		// 어차피 메세지는 받아오고, 응답페이지는 고정이니 반복임
+		// 에러페이지 바뀌거나 파일명 바뀌면? 모든 핸들러 이부분 바뀌어야함, 중복코드 발생하면 유지보수 힘들다
+		log.info("발생예외 : {}", e);
+		return mv;
+		
+	}
 	
 	// 사용자 정의 예외 클래스 두개 만들었음
 	// 첫번째는 너무 길어요 예외, 두번째는 InvalidArguments

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.kh.spring.exception.InvalidArgumentsException;
 import com.kh.spring.exception.TooLargeValueException;
+import com.kh.spring.exception.UserIdNotFoundException;
 import com.kh.spring.member.model.dao.MemberRepository;
 import com.kh.spring.member.model.dto.MemberDTO;
 
@@ -16,6 +17,35 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor // 생성자 주입을 통해 필드들에 의존성 주입되는데 개발자가 할필요없고 롬복이 알아서
 public class MemberServiceImpl implements MemberService {
+	
+	/*
+	 * SRP(Single Responsibility Principle)
+	 * 단 일 책 임 원 칙 위반
+	 * 
+	 * 하나의 클래스는(메소드) 하나의 책임만을 가져야함 == 얘가 수정되는 이유는 딱 하나여야함
+	 * 
+	 * 멤버 서비스는 DB에 있는 멤버 테이블에 CRUD 작업을 위한 클래스임, 얘가 수정이 되는 이유는 뭐여야하나?
+	 * 테이블 관련 작업을 할 때 뭔가 수정이 생기면 이게 변해야하는데,
+	 * 지금 필드로 passwordEncoder를 사용하고 있음, 이거 쓰다가 Argon2로 Encoder 바꾸자고 했다고 쳐
+	 * 이게 바뀔 수 있는데, 이 일이 지금 Member랑 관련있는 일이 아님
+	 * 평문을 암호문으로 바꾸고 그게 맞는지 체크해주는건 멤버랑 아무관련이 없음
+	 * 문자열 암호문으로 만들어주는 객체일뿐
+	 * 근데 알고리즘 바뀌었다고 여기가 바뀌면 멤버랑 관련없는 작업으로 멤버클래스가 수정되는 일이 발생
+	 * 이게 단일책임원칙 위반인것
+	 * 
+	 * 책임 분리하면 끝
+	 * 
+	 * 서비스 입장에서 BCryptPasswordEncoder를 너무 잘 알고 있는 의존하고 있는 상태
+	 * 이걸 의존시키지 않고 클래스를 새로 생성 -> PasswordEncoder
+	 * 
+	 * 이거 메소드에도 적용되는 원칙임! 서비스에 있는 메소드들을 보니 코드들의 상태가...?
+	 * 하나의 메소드가 너무 많은 책임을 가지고 있음
+	 * signUp의 목적(컨트롤러가 호출함) -> 사용자가 입력한 값으로 DB에 한 행 INSERT
+	 * 사용자의 입력값을 사용하려고 갑자기 검증을 하고 있음
+	 * 만약에 정책이 바뀌었어, DB가 20byte -> 15byte로 컬럼 크기가 바뀐다든지..
+	 * insert 목적 메소드인데 컬럼 크기 바뀌었다고 여기서 유효성 검증 부분이 바뀌어야함
+	 * 
+	 */
 	
 	// @Autowired
 	private final SqlSessionTemplate sqlSession;
@@ -30,7 +60,8 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 암호화 주입받기 위한 필드선언
 	// @Autowired
-	private final BCryptPasswordEncoder passwordEncoder;
+	// private final BCryptPasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder; // 기존에 사용하던 해싱알고리즘 뭔지 몰라도 쓰게 여기만 수정, 아래쪽 수정안해도됨 -> 알고리즘 바뀌면 PasswordEncoder에서 수정하기만 하면됨
 	// 어제 한거 필드, 세터, 생성자 주입 이렇게 세가지였음 -> 권장은 생성자였죠? 늘어날때마다 귀찮은데...? 처음에야 그냥 만들겠지만 나중에 계속 작업해야함
 	// 그렇지만 이렇게 해야 객체의 불변성이 보장되니까 이게 권장사항임! 실무에서는 잘 지켜지지 않을 수 있음
 	// 필드에 기존에 달려있던 @Autowired 애노테이션 지우고 final로 선언하고 생성자주입방식
@@ -75,11 +106,63 @@ public class MemberServiceImpl implements MemberService {
 		MemberDTO loginMember = memberRepository.login(sqlSession, member);
 		// 일단 아이디만으로 조회해오기
 		// 매개변수로 받아온 member에는? 로그인할때 사용자가 입력한 비밀번호 평문이 들어있음
+		// 1절 : ID만으로 조회, passwordEncoder로 비밀번호 검증할거임, 만약에 id 조회결과가 없다면?
+		/*
+		 * NPE 발생한다, loginMember.getUserPwd()는 null이 아닐때만 동작해야함
+		 * -> Exception 클래스 새러 생성
+		 * 
+		 */
+		
+		// -----
+		if(loginMember == null) {
+			
+			// throw new UserIdNotFoundException("아이디가 존재하지 않습니다.");
+			throw new UserIdNotFoundException("아이디 또는 비밀번호가 틀림");
+			// 보안적 관점에서 메세지 수정
+			
+			// 비밀번호 잘못됐다는 메세지면 아이디 있다는거니까 모든 경우의 수 때려박는 식으로 브루트포스 어택(무차별 대입 공격, Brute-force attack)
+			// 선택지를 줄여주는게 좋은게 아니다, 메세지는 애매하게 넣어줌
+			// 모든 암호는 브루트포스 공격의 타겟이 될 수 있음, 그러므로 몇번 틀리면 안된다고 인증 다시하라, 시간동안 금지하고 막아버리는 식으로 구현
+			// 레인보우 테이블 -> 해싱 알고리즘 돌리면 평문으로 돌렸을 때 무조건 같은 값이 나오니까 이걸 전부 표로 만들어놓음
+			// a로 돌리면 뭐가나오고 b로 돌리면 뭐가나오는지 -> 이걸 레인보우테이블이라고 함, 알고리즘만 알면 이 표를 보고 평문 유추 가능
+			// 그러므로 암호화 알고리즘도 아무거나 쓰는게 아니라 많이 쓰고 검증된걸로 써야함
+			// 우리도 이런 보안적인 측면을 고려하기 위해서 사용자가 로그인을 할 때 비밀번호 다섯번 잘못적으면 막아야겠따! 메일 인증 다시 받게 해야겠다! 이런거 할수있겠지?
+			// 이거 하려면 로그인 시도 했는데 몇번 틀렸는지 알아야함 -> 브라우저에 하면 안되니까 DB에 넣어야하는데 안틀리면 안생기는 값이니 별도의 테이블로 구현하는게 낫겠지
+			// 반대로 조회할때도 로그인을 할때도 이걸 바로 id 조회하는게 아니라 시도실패횟수먼저 조회해서 되돌려보내는 식으로 구현
+			
+		}
+		// -----
+		
 		log.info("사용자가 입력한 비밀번호 평문 : {}", member.getUserPwd());
 		log.info("DB에 저장된 암호화된 암호문 : {}", loginMember.getUserPwd());
 		// DB에서 저장된 암호문을 같이 까보자!
+		// 암호문이 있으면 만들때 사용한 salt값 사용가능
+		// 버전을 보면 어떤 버전의 알고리즘을 알수있고, 횟수도 알고리즘 몇번 돌렸는지 알수있음
+		// 평문, 버전, 반복수, salt값이 있다면 똑같은 방식으로 salt값 더해서 가능
+		// 해싱 알고리즘 특 -> 같은 값으로 같은 해싱알고리즘을 돌리면 똑같은 결과값이 나온다
+		
+		// 아이디만 가지고 조회를 하기 때문에
+		// 비밀번호를 검증 후
+		// 비밀번호가 유효하다면 ㅇㅋㅇㅋ~
+		// 비밀번호가 유효하지 않다면 이상한데??
+		
+		// 새로운거 만들지 않고 기존 코드 고치는 방식으로 작업
+		// select, insert 한번씩 해봤으니 스프링 다한거임, 퀄리티만 높여서 실무와 가까운 코드로 고쳐보자
+		
+		if(passwordEncoder.matches(member.getUserPwd(), loginMember.getUserPwd())) {
+			// 암호문이 평문으로 만들어졌다면 true, 아니라면 false -> if문의 조건으로 사용
+			
+			// 들어왔다는건 비밀번호 맞다는거임
+			return loginMember;
+			
+		}
 		
 		return null;
+		// 원래대로라면 여기오는건 비밀번호가 잘못된거니까 리턴이 아니라 예외를 발생해야함
+		// throw new PasswordNotMatchException 이런거 만들어서 했겠죠 -> 이거 별로 안좋음
+		// 아이디가 틀리고 비밀번호가 틀리고 이렇게 알려주면 보안상 별로 좋은게 아님, 공격자가 메세지를 받고 있는 아이디구나, 해서 비밀번호만 바꿔서 공격하는 식으로 악용가능
+		// 명확하게 알려주는건 별로 좋은 방법이 아니게 된다. 보안적인 측면을 잘 고려하면 아이디 또는 비밀번호가 잘못되었다고 알려줌, 뭐가 잘못된지 없는지 모르게 하기 위해서
+		// 아이디 유무는 중복체크 보면 알 수 있으니 허점이 있긴 하지만... 아무튼 그런거 고려해서 메세지 수정
 		
 	}
 
