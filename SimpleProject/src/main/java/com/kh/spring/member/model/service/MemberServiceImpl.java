@@ -1,7 +1,10 @@
 package com.kh.spring.member.model.service;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Service;
 
+import com.kh.spring.exception.AuthenticationException;
 import com.kh.spring.exception.UserIdNotFoundException;
 import com.kh.spring.member.model.dao.MemberMapper;
 import com.kh.spring.member.model.dto.MemberDTO;
@@ -304,7 +307,7 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public void update(MemberDTO member) {
+	public void update(MemberDTO member, HttpSession session) {
 		
 		// 여기부터 이제 본격적인 개발자의 영역
 		// 내가 생각하는 update는 어떻게 동작해야할까?
@@ -337,6 +340,39 @@ public class MemberServiceImpl implements MemberService {
 		// 여기서 세션을 받으면 여러 사용자에 의한 충돌이 생길 수 있음
 		// 각 요청에 의해 세션이 생기므로 컨트롤러에서 넘겨서 사용하는것을 권장함 -> 컨트롤러에서 매개변수 작성
 		// 여기서 세션만드는건 또 DB 업데이트랑 상관없는 영역이니까, 비즈니스 로직은 아님 세션만들고 받아오는것이 그렇지, 그러므로 컨트롤러에서 하는걸 권장
+		
+		// 본격적으로 진짜 시작
+		// 세션에서 객체 뽑기
+		MemberDTO sessionMember = ((MemberDTO)session.getAttribute("loginMember"));
+		// 이게 null일수있다, 매핑값만 있으면 요청할수있음
+		// sessionMember, member 둘다 null인지 검증해줘야하는데 이건 업데이트랑 관련없는 작업
+		// -> 이건 MemberValidator클래스에 코드를 분리했음
+		// 다녀와잇!
+		
+		// 2를 생략하려고 했으나 로그인한 상태인데 그사이에 탈퇴시켜버렸다면 확인해야함 -> MemberValidator 작업
+		// id만 있으면 select해서 있는지 없는지 확인하는 메소드가 있음 -> login 호출
+		validator.validatedUpdateMember(member, sessionMember);
+		// 여기가 유효성 검증, 올바른 값이었다는 뜻 -> 이제 DB가서 업데이트해야함
+		// 서비스가 가는게 아니라 Mapper가 가는거니까 mapper로 호출, sqlSession도 넘길 필요가 없음
+		int result = mapper.update(member);
+		// 매퍼 다녀옴
+		// ??? 16:34
+		
+		if(result != 1) {
+			
+			// 이건 업데이트가 안되었다는 뜻
+			// 예외 발생시켜야함
+			throw new AuthenticationException("문제가 발생했습니다. 관리자에게 문의하세요.");
+			
+			// 의식 못하고 쓰는 웹사이트의 다양한 예외들 -> 이거 개발자가 깔끔하게 해줘야하는것
+			// 예외가 일어나지 않는, 문제가 생기지 않는 웹사이트와 프로그램은 없다
+			// 문제가 일어나는것과 별개로 사용자가 프로그램을 온전히 이용할 수 있게끔 깔끔하게 처리해줘야한다
+			
+		}
+		
+		// 잘 하고 돌아왔다는 뜻이고 세션에는 값이 갱신되어있지 않으니 갱신해주기
+		sessionMember.setUserName(member.getUserName());
+		sessionMember.setEmail(member.getEmail());
 
 	}
 

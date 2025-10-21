@@ -3,6 +3,7 @@ package com.kh.spring.member.model.dao;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import com.kh.spring.member.model.dto.MemberDTO;
 
@@ -26,5 +27,16 @@ public interface MemberMapper {
 	
 	@Insert("INSERT INTO MEMBER VALUES (#{userId}, #{userPwd}, #{userName}, #{email}, SYSDATE)")
 	int signup(MemberDTO member);
+	
+	// resultSet 필요하고 복잡하면 매퍼파일 xml로 만들어야한다, 이런 간단한것만 하는게 좋아
+	// 가독성 떨어지긴 하는데 string 블록 만들어서 해도 되고
+	@Update("UPDATE MEMBER SET USER_NAME = #{userName}, EMAIL = #{email} WHERE USER_ID = #{userId}")
+	int update(MemberDTO member);
+	
+	// 마이바티스 써서 DAO 간단간단, xml 파일이 없는것도 가능해짐
+	// 마이바티스 공식문서 가면 매퍼 애노테이션 사용하면 겁나 죠습니다 하고 써있음
+	// 이건 마이바티스 3버전부터 제공되는 애노테이션이라 2버전 이하 쓰면 이것도 못쓰긴함
+	// 구닥다리는 좋지않은표현일수도 있지, 회사전체의 생산성을 생각하면 효율성이 좋을 수 있다, 구닥다리가 안좋다는게 아니고 오래된 기술이라는 단순한 의미
+	// 나쁜건 없어 기술 선택에는 항상 이유가 있어
 
 }

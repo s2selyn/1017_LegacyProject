@@ -575,10 +575,11 @@ public class MemberController {
 		 * 서비스에서는 순수 비즈니스 로직만 구현
 		 * 서비스에서 HttpSession이 필요하다면 인자로 전달
 		 * 
-		 * -> 이 메소드의 매개변수 자리에 작성
+		 * -> 이 메소드의 매개변수 자리에 작성하고 서비스에 전달
+		 * 인터페이스에서 받아서 쓰고있으므로 인터페이스를 수정해줘야함
 		 * 
 		 */
-		memberService.update(member);
+		memberService.update(member, session);
 		
 		return "redirect:mypage"; // 마이페이지로 다시 보낼것임
 		

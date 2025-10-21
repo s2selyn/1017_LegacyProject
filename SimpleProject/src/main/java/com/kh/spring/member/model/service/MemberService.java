@@ -1,5 +1,7 @@
 package com.kh.spring.member.model.service;
 
+import javax.servlet.http.HttpSession;
+
 import com.kh.spring.member.model.dto.MemberDTO;
 
 public interface MemberService {
@@ -30,7 +32,7 @@ public interface MemberService {
 	// 커맨드 객체 방식 배웠으니까 앞에서 객체로 넘겨준 값 그대로 쓸 수 있을 듯
 	
 	// 정보수정
-	void update(MemberDTO member);
+	void update(MemberDTO member, HttpSession session);
 	
 	// 탈퇴
 	void delete(MemberDTO member);

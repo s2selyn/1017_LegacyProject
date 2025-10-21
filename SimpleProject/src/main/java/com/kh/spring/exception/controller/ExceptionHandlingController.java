@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kh.spring.exception.AuthenticationException;
 import com.kh.spring.exception.InvalidArgumentsException;
 import com.kh.spring.exception.TooLargeValueException;
 import com.kh.spring.exception.UserIdNotFoundException;
@@ -14,15 +15,34 @@ import lombok.extern.slf4j.Slf4j;
 @ControllerAdvice // Global Exception Handler로 사용하기 위한 애노테이션, 예외처리 전문가로 만들어보자
 public class ExceptionHandlingController {
 	
-	@ExceptionHandler(UserIdNotFoundException.class)
-	protected ModelAndView idNotFoundError(UserIdNotFoundException e) {
+	// 중복제거하자! 분리해야함, 밖에서 부를일 없으니 private
+	private ModelAndView createErrorResponse(RuntimeException e) {
+		// 이 메소드를 호출해서 쓸 예외 클래스들이 전달할 매개변수 형태가 전부 다르지만(자기자신클래스타입을 전달함) 상속받아서 구현했기 때문에 매개변수에 RuntimeException 부모타입 작성하면 다형성 적용되니까 가능
 		
 		ModelAndView mv = new ModelAndView();
 		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
-		// 어차피 메세지는 받아오고, 응답페이지는 고정이니 반복임
-		// 에러페이지 바뀌거나 파일명 바뀌면? 모든 핸들러 이부분 바뀌어야함, 중복코드 발생하면 유지보수 힘들다
 		log.info("발생예외 : {}", e);
 		return mv;
+		
+	}
+	
+	@ExceptionHandler(AuthenticationException.class)
+	protected ModelAndView authenticationError(AuthenticationException e) {
+		return createErrorResponse(e);
+	}
+	
+	@ExceptionHandler(UserIdNotFoundException.class)
+	protected ModelAndView idNotFoundError(UserIdNotFoundException e) {
+		
+//		ModelAndView mv = new ModelAndView();
+//		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
+//		// 어차피 메세지는 받아오고, 응답페이지는 고정이니 반복임
+//		// 에러페이지 바뀌거나 파일명 바뀌면? 모든 핸들러 이부분 바뀌어야함, 중복코드 발생하면 유지보수 힘들다
+//		log.info("발생예외 : {}", e);
+//		return mv;
+		
+		return createErrorResponse(e);
+		// 중복제거 하고 이것만 반환하면됨
 		
 	}
 	
@@ -31,29 +51,35 @@ public class ExceptionHandlingController {
 	// 각각의 예외가 발생했을 때 이게 잘 잡는지 확인해보자
 	@ExceptionHandler(TooLargeValueException.class)
 	protected ModelAndView largeValueError(TooLargeValueException e) {
-		// 접근제한자 protected, 메소드명은 자유
+//		// 접근제한자 protected, 메소드명은 자유
+//		
+//		// log.info("길이가 길면 정말 얘가 출동함??");
+//		// 이것도 잘 호출된다
+//		
+//		// log.info("{}", e.getMessage());
+//		
+//		ModelAndView mv = new ModelAndView();
+//		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
+//		return mv;
 		
-		// log.info("길이가 길면 정말 얘가 출동함??");
-		// 이것도 잘 호출된다
-		
-		// log.info("{}", e.getMessage());
-		
-		ModelAndView mv = new ModelAndView();
-		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
-		return mv;
+		return createErrorResponse(e);
+		// 중복제거 하고 이것만 반환하면됨
 		
 	}
 	
 	@ExceptionHandler(InvalidArgumentsException.class)
 	protected ModelAndView invalidArgumentError(InvalidArgumentsException e) {
 		
-		// log.info("값이 없으면 정말 얘가 호출됨??");
-		// 브라우저에서 억지로 예외 발생시켜보기(아이디 비밀번호에 공백문자 입력하고 요청) -> 얘가 호출된다!
+//		// log.info("값이 없으면 정말 얘가 호출됨??");
+//		// 브라우저에서 억지로 예외 발생시켜보기(아이디 비밀번호에 공백문자 입력하고 요청) -> 얘가 호출된다!
+//		
+//		// log.info("{}", e.getMessage());
+//		ModelAndView mv = new ModelAndView();
+//		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
+//		return mv;
 		
-		// log.info("{}", e.getMessage());
-		ModelAndView mv = new ModelAndView();
-		mv.addObject("msg", e.getMessage()).setViewName("include/error_page");
-		return mv;
+		return createErrorResponse(e);
+		// 중복제거 하고 이것만 반환하면됨
 		
 	}
 	
