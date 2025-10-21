@@ -4,11 +4,13 @@
   "https://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 
+	<!--
+	settings에서 빈문자열같은거 왔을 때 널값으로 인지가 되도록 설정 태그 추가(settings 태그)
+	클래스들 길게 쓰기 귀찮으니까 typeAliases
+	매퍼 넣으려고 mappers 태그
+	-->
 	<settings>
-	
-		<!-- ??? 15:26 settings, typeAliases, mappers 태그들 뭘 위한 코드더라? -->
 		<setting name="jdbcTypeForNull" value="NULL" />
-	
 	</settings>
 	
 	<typeAliases>

@@ -69,8 +69,11 @@
 		그래서 원래라면 선생님이랑 같이 바꾸려고 시나리오를 짜셨다는데 이미 바꿔두셔서 ㅎ
 	-->
 	<dependencies>
-	<!-- 기본적으로 Spring Web MVC 할 때 필요한것들이 추가되어있음
-	??? 14:23 inject는 테스트코드용, 서블릿도 있고 테스트용 junit 등이 있음 맨 아래로 ㄱㄱ -->
+	<!-- 기본적으로 Spring Web MVC 동작할 때 필요한것들이 추가되어있음
+	스프링 프레임워크 aspect는 AOP 할 때 사용
+	slf4g는 로그찍을때, javax.mail은 메일 보낼 때(스프링 이용해서 웹에서 보내게 할 수 있음), 
+	inject는 테스트코드용, 서블릿도 있고 jsp도 있고, junit 단위기간, 단위테스트 테스트코드 써서 잘 돌아가는지 안돌아가는지 테스트
+	등등이 있음 맨 아래로 ㄱㄱ -->
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -203,13 +206,13 @@
 		    <version>23.7.0.25.01</version>
 		</dependency>
 		
-		<!-- JDBC는 스프링에서 넣는다고 바로 쓸 순 없음 -->
+		<!-- JDBC는 스프링에서 ojdbc만 넣는다고 바로 쓸 순 없음 -->
 		<!-- 1_2. JDBC를 SPRING에서 사용하기 위해 필요한 라이브러리를 추가해줘야함 -->
-		<!-- 다시 메이븐 레포가서 검색 -> spring-jdbc -> Spring JDBC -> 이건 지금 spring 버전이랑 통일시켜야함
+		<!-- 다시 메이븐 레포가서 검색 -> 스프링에서 jdbc를 쓰는 것이므로 spring-jdbc로 검색 -> Spring JDBC 선택 -> 이건 지금 spring 버전이랑 통일시켜야함
 		4페이지에 보면 5.3.33 -> dependency 복사해와서 붙여넣고 저장
 		근데 이거 좋은 방식이 아님, 스프링 버전 바꿔버리면 여기도 바꿔야한다
 		실제 값이 적힌 5.3.33을 수정 -> spring 선언한 property 복사해오기 -> ${org.springframework-version}
-		5.3.39로 변경
+		이제 위에서 java-version 태그 내부에서 springframework-version 5.3.39로 변경 -> 한번에 다 바뀐다
 		-->
 		<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
 		<dependency>
@@ -219,7 +222,8 @@
 		</dependency>
 		
 		<!-- 1_3. MyBatis 이건 직접 해보자 마이바티스 공식문서 ㄱㄱ
-		??? 14:38 사용할 마이바티스 버전 어디서 확인하는지?
+		공식문서 보면 시작하기에 dependency 태그가 있음, 라이브러리 프레임워크를 제공하는 쪽에 가보면 원래 이렇게 있다
+		다 써주니까 공식문서에서 버전 확인하고 버전도 작성 -> 라이브러리마다 찾으러다니기 번거로우니 메이븐 레포지토리에 다 모여있다
 		메이븐 할거면 똑같이 레포에서 마이바티스 검색해서 하면됨
 		-->
 		<dependency>

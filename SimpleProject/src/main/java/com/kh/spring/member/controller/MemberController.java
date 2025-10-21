@@ -31,7 +31,7 @@ public class MemberController {
 	// 이건 어디서 튀어나왔나? web.xml을 읽는다 -> 가서 보면됨
 	// listener를 올림
 	// processes application requests 주석 아래에 servlet 태그가 있음
-	// 이거보면 org.springframework.web.servlet.DispatcherServlet 풀클래스명이니 이게 클래스인거 알수있음
+	// 이거보면 spring-webmvc-5.3.39.jar > org.springframework.web.servlet > DispatcherServlet.class 풀클래스명이니 이게 클래스인거 알수있음
 	// try-catch, if-else 등등 뿐 객체 올리면서 필드값 넣음
 	// 궁극적으로 서블릿임, DispatcherServlet은 HttpServlet을 상속받아 시작됨, 다이나믹 웹프로젝트랑 똑같음
 	// doGet, doPost 다 들고있다, 메소드가 좀 많긴함 delete, put, patch?fetch? 이런건 부트가서 얘기할거지만 아무튼 궁극적으로 서블릿
@@ -84,9 +84,10 @@ public class MemberController {
 	// 브라우저에서 매핑값으로 url로 요청 보내면 이 메소드 호출돼서 콘솔에 출력성공
 	
 	/*
-	 * 스프링 애플리케이션에서 제일ㅇ 처음 요청받는건 DispatcherServlet -> 각각의 메소드를 요청처리기(RequestHandler)라고 표현
-	 * DispatcherServlet 입장에서는 각 메소드 호출해서 요청을 넘겨줘야함
-	 * 그건 요청 처리하는건지 아는지 뭘보고 컨트롤러인지 메소드인지 아는거지?
+	 * 스프링 애플리케이션에서 제일 처음 요청받는건 DispatcherServlet -> 각각의 메소드를 요청처리기(RequestHandler)라고 표현
+	 * DispatcherServlet 입장에서는 각각의 매핑값이 들어왔을 때 각각의 요청을 처리하는 리퀘스트 핸들러에게 요청을 넘겨줘야함
+	 * 이 이 요청을, 각 메소드를 DS가 호출해서 요청을 넘겨줘야함
+	 * DS는 어떤게 요청 처리하는건지 아는지 뭘보고아는거지? 뭘보고 구분? 뭘보고 컨트롤러인지 메소드인지 아는거지?
 	 * 이걸 이해하려면 다시 web.xml로 돌아가야함
 	 * 
 	 */

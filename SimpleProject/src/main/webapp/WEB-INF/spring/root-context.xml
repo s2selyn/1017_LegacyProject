@@ -47,8 +47,11 @@
 	
 	<bean class="org.apache.commons.dbcp.BasicDataSource"
 		  id="dataSource" destroy-method="close">
-		
+		<!-- driverClassName이라는 클래스에 있는 필드에 값을 대입해야함 -->
 		<!-- name 속성에 내가 값을 대입하고 싶은 필드의 이름을 적어준다, setter니까 인자값 전달해줘야하므로 value 속성 이용해서 값을 넣어주도록 함 -->  
+		<!-- BasicDataSource는 마이바티스 객체, 실질적으로 DB랑 연결하려면 jdbc에서 driver를 써야함
+		driver의 정체는 class, 자바에서 쓸수 있는것은 클래스 자바에서 구현해야하니까 인터페이스나 클래스겠지
+		OracleDriver.class이다, 이걸 넣고싶은것이야, name 속성값은 driverClassName, value 속성값은 풀클래스명으로 쓴다 -->
 		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
 		<property name="url" value="jdbc:oracle:thin:@115.90.212.20:10000:xe" />
 		<property name="username" value="CJ18" />
@@ -69,16 +72,20 @@
 	
 	<!-- 데이터소스 끝, 최종적으로 DB가서 SQL 실행하려면 SqlSession 객체가 필요함, 이거 만드려면? SqlSession 만들 공장 필요
 	마이바티스에서 만드려면 factoryBuilder로 factory만들고 session 만들었다, 절차 생각, 우리가 안만들거고 스프링이 만들건데 뭐가필요한지 알아야 찾아서 만들게하지
-	sqlSessionFactory도 직접만들게 아니고 jar에서 찾을 수 있음 -> 이것도 Bean으로 구현되었군
-	우리가 데이터소스 객체를 setter로 DataSource 타입 dataSource 필드에 대입해줘야함
+	sqlSessionFactory도 직접만들게 아니고 mybatis-spring-1.3.1.jar > org.mybatis.spring에서 찾을 수 있음 -> 이것도 Bean으로 구현되었군
+	우리가 만들어서 bean으로 등록한 데이터 소스도 객체로 올라갔을거임
+	그럼 데이터소스 타입의 데이터소스 객체를 어떻게 해줌? setter로 DataSource 타입 dataSource 필드에 대입해줘야함
 	팩토리 클래스를 스프링이 관리할 수 있도록 Bean으로 등록해줘야겠다 -> bean 태그
-	class 속성에 풀클래스명
-	이 필드에도 값 대입해줘야함
-	??? 16:24 나중에 mappers에도 매퍼 등록하고 해줘야하는데 마이바티스에서 resources 해서 뭐했던거 기억
-	??? configLocation에는???
-	스프링은 나중에 target 폴더가 배포된다 -> classes 폴더가 익숙하군, 우리가 작업한 자바, xml 파일들이 들어감
-	여기부터 경로가 시작되는 최상위루트
-	dataSource 대입시킬건 위에서 적어둔거 참조해서 넣어줘야함, value 속성이 아니고 ref 속성으로 id 속성값 작성
+	첫번째로는 class 속성에 풀클래스명
+	이녀석의 데이터소스 필드에 우리가 위에 만들어둔 데이터소스 넣어줘야하고
+	세팅 파일을 만들었음, 나중에 mybatis-config에 typeAliases, mappers 이런거 쓰겠지? 이것도 configLocation으로 넣어줘야한다
+	마이바티스에서는 resources 써서 stream 얻고 config 파일 넣고 어쩌구저쩌구 했음
+	아무튼 이 configLocation 필드에도 값 대입해줘야함, 여기는 아까 만든 mybatis-config.xml 넣어주고
+	dataSource 필드에는 아까 위에서 빈으로 등록한거 넣어줘야하고, 둘 다 setter로 넣는다 -> setter로 넣고싶은거니까 property 태그이용
+	필드명은 name속성값, value에는 실제 값을 적는데,
+	스프링은 나중에 target 폴더가 압축되어 배포된다 -> classes 폴더가 익숙하군, 우리가 작업한 자바, xml 파일들이 들어감
+	classes 여기부터 경로가 시작되는 최상위루트 -> 이 경로를 적는다, 지금 보면 classes바로 밑에 있으니까 파일명만 작성함
+	dataSource 대입시킬건 위에서 적어둔거(bean) 참조해서 넣어줘야함, value 속성이 아니고 ref 속성으로 id 속성값 작성
 	여기까지 팩토리만든것
 	-->
 	<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory" >
@@ -116,5 +123,5 @@
 	
 	<!-- 매퍼 인터페이스 스캔하게 하는 코드 -->
 	<mybatis-spring:scan base-package="com.kh.spring.member.model.dao"/>
-		
+
 </beans>
