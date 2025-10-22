@@ -43,15 +43,21 @@
 </head>
 <body>
     
-    <jsp:include page="" />
+    <jsp:include page="../include/header.jsp" />
 
     <div class="content">
         <br><br>
         <div class="innerOuter" style="padding:5% 10%;">
             <h2>게시판</h2>
             <br>
+            
+            <%-- 진짜인거임!!!! 그래서 복습을 열심히 해야하는거임!!!!! --%>
             <!-- 로그인 후 상태일 경우만 보여지는 글쓰기 버튼 -->
-            <a class="btn btn-secondary" style="float:right;" href="">글쓰기</a>
+            <%-- 로그인여부는 세션스코프 열어보면 알 수 있다 --%>
+            <c:if test="${ not empty sessionScope.loginMember }">
+            	<a class="btn btn-secondary" style="float:right;" href="boards/form">글쓰기</a>
+            </c:if>
+            
             <br>
             <br>
             <table id="boardList" class="table table-hover" align="center">
@@ -77,9 +83,9 @@
 	                        <td>${ board.count }</td>
 	                        <td>${ board.createDate }</td>
 	                        <td>
-	                        <c:if test="${ not empty board.changeName }">
-	                        	💌
-	                        </c:if>
+		                        <c:if test="${ not empty board.changeName }">
+		                        	💌
+		                        </c:if>
 	                        </td>
 	                    </tr>
 	                    </c:forEach>
@@ -133,7 +139,7 @@
 
     </div>
 
-    <jsp:include page="" />
+    <jsp:include page="../include/footer.jsp" />
 
 </body>
 </html>

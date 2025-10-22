@@ -45,5 +45,10 @@ public class BoardController {
 		return "board/list";
 		
 	}
+	
+	@GetMapping("boards/form")
+	public String toForm() {
+		return "board/form";
+	}
 
 }
