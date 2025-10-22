@@ -269,11 +269,35 @@ public class BoardServiceImpl implements BoardService {
 		// 제일 처음에 뭐부터 할까? 장난꾸러기가 있을 수 있겠지? 게시글 번호가 슬래시 뒤에 붙어서 와야하는데 0, -500 이런식의 장난
 		// 장난치지마라고 돌려보내자
 		// 게시글 있는지 없는지 DB에 가야하는데, 있을 수 없는 번호라면 보낼 필요도 없다 -> boardNo가 장난꾸러기인가 아닌가를 검증, 이건 PK, SEQ로 만드니까 1부터 시작, 그보다 작을 수 없다
-		if(boardNo  1) {
+		if(boardNo < 1) {
+			throw new InvalidArgumentsException("유효하지 않은 요청입니다.");
+		}
+		// 유효성 검증 했음
+		
+		// select, update 중에 뭐 먼저할지 정한다, DML 먼저하는것을 선호한다
+		// UPDATE 먼저하고 SELECT 하는것을 선호한다
+		// select 먼저하면 조회수 증가하기 전의 count가 들어있으니까 보편적인 상황에서 update 먼저해서 데이터 갱신시키고 최신 데이터를 조회(select)한다
+		int result = boardMapper.increaseCount(boardNo);
+		
+		// 증가했을수도 안했을수도 있는데 안했다면 문제생긴거임 -> 보편적으로 쓰는것? BadRequestException은 못씀
+		if(result != 1) {
+			
+			throw new InvalidArgumentsException("잘못된 요청입니다.");
+			// 숙제로 만든 예외클래스로 바꾸면됨
+			// 아무튼 insert 성공 못했으면 여기서 빠꾸당함
 			
 		}
 		
-		return null;
+		// insert 성공했다면 조회 해와야한다
+		BoardDTO board = boardMapper.findByBoardNo(boardNo);
+		// 조회한것을 반환받는다
+		// 조회수 증가되고 조회하러 DB가는 사이에 게시글 삭제되었을 수 있음, 그럼 select 조건절에서 걸리니까 조회결과 없음
+		// 지워진걸 들고가면 안된다! 그러니까 한번더 board가 조회가 안됐다면 null과 같을거니까 비교해야함
+		if(board == null) {
+			throw new InvalidArgumentsException("삭제된 게시글입니다.");
+		}
+		
+		return board;
 		
 	}
 

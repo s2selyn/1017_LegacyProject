@@ -1,5 +1,7 @@
 package com.kh.spring.board.model.dto;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,5 +30,8 @@ public class BoardDTO {
 	// 날짜 맨날 sql date 썼으니까 이번엔 다르게
 	private String createDate;
 	private String status;
+	
+	// 게시글에 달린 댓글이 몇개일지 모르니까 리스트
+	private List<ReplyDTO> replies;
 
 }

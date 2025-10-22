@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.spring.board.model.dto.BoardDTO;
 import com.kh.spring.board.model.service.BoardService;
+import com.kh.spring.exception.InvalidArgumentsException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,7 +95,8 @@ public class BoardController {
 	
 	// 게시글 번호가 가변적으로 들어오는데, 이걸 어떻게 뽑아서 활용하고 애노테이션을 중복없이 달수있을까? -> 중괄호 -> 내부에 작성하고 싶은 키값, 지금 pk이니까 보통 이런 경우에 id로 많이 쓴다
 	@GetMapping("/{id}") // 몇번 게시글이느냐에 따라 id에 들어올건데, 이걸 매개변수에 받아보자
-	public String toDetail(@PathVariable(name="id") Long boardNo) { // boardNo로 사용할거니까 매개변수 선언, url 경로에서 가변적인 값을 뽑아내야한다, 앞에 애노테이션 추가 -> name 속성값은 메소드 상단의 애노테이션에 적은 키값을 여기에 적어준다
+	public String toDetail(@PathVariable(name="id") Long boardNo,
+						   Model model) { // boardNo로 사용할거니까 매개변수 선언, url 경로에서 가변적인 값을 뽑아내야한다, 앞에 애노테이션 추가 -> name 속성값은 메소드 상단의 애노테이션에 적은 키값을 여기에 적어준다
 		// 잘 넘어오는지 출력해서 확인해보기
 		log.info("게시글번호 : {}", boardNo);
 		
@@ -168,7 +170,15 @@ public class BoardController {
 		// 조회수 증가에 성공했다면 SELECT로 조회
 		// 만약에 없는 게시글 번호라면 예외발생
 		// 여기서 뭐 할거없음, 클릭해서 조회라 권한체크도 필요없으니 바로 서비스단 넘어가자
-		boardService.findByBoardNo(boardNo);
+		BoardDTO board = boardService.findByBoardNo(boardNo);
+		
+		// 이제 비어있을수 없다 서비스에서 체크함
+		// ??? 17:28 컨트롤러에서 해야할작업
+		// 매개변수에 model 추가
+		model.addAttribute("board", board);
+		// 이 편이 좀 더 깔끔하다, 실패 케이스를 서비스에서 검증하고 메시지도 담아서 응답해줄 수 있으니 컨트롤러가 더 간결해짐
+		// 진짜 중간다리가 되어버림 view에서 온거 service에 보내주고
+		// service에서 받은거 다시 view로 보냄
 		
 		return "board/detail";
 		

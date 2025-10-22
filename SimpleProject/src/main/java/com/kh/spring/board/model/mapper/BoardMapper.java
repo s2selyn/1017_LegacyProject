@@ -20,5 +20,10 @@ public interface BoardMapper {
 	// 매퍼는 이거 추상메소드로 끝, sqlSession, select 이런거 읎어!
 	
 	int save(BoardDTO board);
+	
+	int increaseCount(Long boardNo);
+	// 이건 성공실패 여부를 주고받아야한다
+	
+	BoardDTO findByBoardNo(Long boardNo);
 
 }
