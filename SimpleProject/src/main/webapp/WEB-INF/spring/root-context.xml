@@ -122,6 +122,6 @@
 	<!-- value 잘못쓴건 사용자가 알아서 쓰는 값이라 잘못써도 빨간줄이 안가니까 여기 잘못썼다면 에러날확률이 큼 -->
 	
 	<!-- 매퍼 인터페이스 스캔하게 하는 코드 -->
-	<mybatis-spring:scan base-package="com.kh.spring.member.model.dao"/>
+	<mybatis-spring:scan base-package="com.kh.spring.member.model.dao, com.kh.spring.board.model.mapper"/>
 
 </beans>

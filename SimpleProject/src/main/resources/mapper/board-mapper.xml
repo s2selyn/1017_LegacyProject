@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.spring.board.model.mapper.BoardMapper">
+
+	<select id="selectTotalCount"
+			resultType="_int">
+	
+		SELECT
+		       COUNT(*)
+		  FROM
+		       BOARD
+		 WHERE
+		       STATUS = 'Y'
+	
+	</select>
+	
+	<select id="findAll"
+			resultType="com.kh.spring.board.model.dto.BoardDTO">
+	
+		SELECT
+		       BOARD_NO boardNo
+		     , BOARD_TITLE boardTitle
+		     , BOARD_WRITER boardWriter
+		     , COUNT
+		     , TO_CHAR(CREATE_DATE, 'YYYY-MM-DD') as createDate
+		     , CHANGE_NAME changeName
+		  FROM
+		       BOARD
+		 WHERE
+		       STATUS = 'Y'
+		 ORDER
+		    BY
+		       BOARD_NO DESC
+	
+	</select>
+
+</mapper>
