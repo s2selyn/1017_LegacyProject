@@ -18,5 +18,7 @@ public interface BoardMapper {
 	
 	List<BoardDTO> findAll(RowBounds rowBounds);
 	// 매퍼는 이거 추상메소드로 끝, sqlSession, select 이런거 읎어!
+	
+	int save(BoardDTO board);
 
 }

@@ -35,5 +35,26 @@
 		       BOARD_NO DESC
 	
 	</select>
+	
+	<insert id="save"
+			parameterType="com.kh.spring.board.model.dto.BoardDTO">
+	
+		INSERT
+		  INTO
+		       BOARD
+		VALUES
+		       (
+		       SEQ_BNO.NEXTVAL
+		     , #{boardTitle}
+		     , #{boardWriter}
+		     , #{boardContent}
+		     , #{originName}
+		     , #{changeName}
+		     , 0
+		     , DEFAULT
+		     , DEFAULT
+		       )
+	
+	</insert>
 
 </mapper>

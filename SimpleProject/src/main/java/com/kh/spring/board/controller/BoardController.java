@@ -84,7 +84,8 @@ public class BoardController {
 		// 서비스 좀더 집중해서 작업해보자
 		boardService.save(board, upfile, session);
 		
-		return "board/form";
+		// save 했다면 게시글 목록 보도록 해줌, 상세보기 했다면 거기로 보냈겠다
+		return "redirect:boards";
 		
 	}
 
