@@ -21,33 +21,36 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Controller
+@Controller // bean 등록
 @RequestMapping("boards")
 @RequiredArgsConstructor
 public class BoardController {
 	
-	// 서비스가 필드로 있어야하고 스프링에게 받아서 써야한다 -> 의존성 주입
-	// 의존성 주입이란? 이러면 이것도 대답할 수 있어야겠죠? 빈칸채우기를 할 수 있으면 내용을 알 수 있는거니까 나머지 채우기도 가능
+	// 서비스가 필드로 있어야하고 스프링에게 받아서 써야한다 -> 타입 맞는걸 bean에 있는걸 넣어주는것을 의존성 주입
+	// 의존성 주입이란? 이러면 이것도 대답할 수 있어야겠죠? 빈칸채우기를 할 수 있으면 내용을 안다는거니까 나머지 채우기도 가능
 	private final BoardService boardService;
 	
 	// 이번에 매핑은 Get방식이므로
-	@GetMapping
+	@GetMapping // ("boards")
 	public String findAll(@RequestParam(name="page", defaultValue="1") Long page
 						, Model model) {
-		// 앞에서 전달되는 값 뽑아서 사용하려면 매개변수 자리에 애노테이션 추가
+		// 앞에서 전달되는 key-value 뭘로받음? 전달값 뽑아서 사용하려면 매개변수 자리에 애노테이션 추가
 		log.info("앞에서 넘어온 페이지 값 : {}", page);
-		// 매개변수 안넘어왔을때 발생하는 예외 -> defaultValue로 추가, 문자열로 추가해줘도 Long으로 파싱해준다
-		// 앞에서 넘어온 값이 없어도 사용할 수 있게 된다
+		// 따라하려고 처음에 아무것도 안넘기고 요청 보내면 예외발생함, RequestParam에 넘어온게 없다고, page라는게 안넘어와서 문제가 생김
+		// 앞에서 넘길 때 아무것도 안적어도, 아무것도 안넘어와도 1로 받는 방법
+		// -> defaultValue로 속성 추가(key가 안넘어왔을때 사용할 값), 문자열로 추가해야하고 그래도 Long으로 파싱해준다
+		// defaultValue 속성을 쓰면 앞에서 넘어온 값이 없을 때도 내가 사용하고 싶은 값을 사용할 수 있게 된다
 		
-		// 페이징처리
-		// 게시글 몇개야
-		// 한페이지에 몇개 보여주지?
-		// 버튼은 몇개보여주지??
-		// 앞에서는 BoardService에 구현하고 컨트롤러에서 selectListCount 하고 페이징처리 객체만들어서 돌려줬음
-		// 그렇게 할 필요가 없다! 사실 컨트롤러가 해야할일이 아님, 실제로 하는 곳은 service(컨트롤러는 모델과 뷰 사이에서 중간다리를 해야함)
+		// 페이징처리 --> 게시글에서 이런것들 하기 위해서 생각해야하는 것들은 여기서 하는게 아니라 서비스에서 하는것
+		// 게시글 몇개야 --> 게시글에서 이런것들 하기 위해서 생각해야하는 것들은 여기서 하는게 아니라 서비스에서 하는것
+		// 한페이지에 몇개 보여주지? --> 게시글에서 이런것들 하기 위해서 생각해야하는 것들은 여기서 하는게 아니라 서비스에서 하는것
+		// 버튼은 몇개보여주지?? --> 게시글에서 이런것들 하기 위해서 생각해야하는 것들은 여기서 하는게 아니라 서비스에서 하는것
+		// 앞에서는 BoardService에서 한것처럼 컨트롤러에서 selectListCount 하고 가져온다음 페이징처리 객체(PageInfo)만들어서 서비스로 돌려주고 작업했다
+		// 그렇게 할 필요가 없다! 사실 이런 작업들은 컨트롤러가 해야할일이 아님, 실질적으로 조회하기 위해서 필요한 절차들을 처리하는 곳은 service(컨트롤러는 중간에서, 모델과 뷰 사이에서 중간다리 역할만 해주면 끝)
+		// --> BoardService interface 수정 -> findAll 메소드 호출 -> service 구현체 작업하고 돌아옴
 		Map<String, Object> map = boardService.findAll(page);
-		// 반환받은 map을 화면 만들어서 보여주도록 어딘가에 담아서 보내줘야한다 -> requestScope에 담아야함, 화면에서만 쓸거니까
-		// 스프링에서 RequestScope에 담기 위한 값을 담을 친구는? Model -> 매개변수 추가
+		// 화면에 뿌려야하니까 반환받은 map을 앞으로 넘길 수 있게 어딘가에 담아서 보내줘야한다 -> requestScope에 담아야함, 화면에서만 쓸거니까
+		// 스프링에서 RequestScope에 값을 담기 위한 담을 친구는? Model -> 매개변수 추가
 		// Model에 추가하는 방법은 addAttribute (addObject는 ModelAndView일때)
 		model.addAttribute("map", map);
 		
@@ -55,7 +58,7 @@ public class BoardController {
 		
 	}
 	
-	@GetMapping("/form")
+	@GetMapping("/form") // ("boards/form")에서 수정함
 	public String toForm() {
 		return "board/form";
 	}

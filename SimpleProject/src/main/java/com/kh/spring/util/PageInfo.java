@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-//애노테이션 한줄쓰기 가능한데 가독성 떨어지니 안함
+//애노테이션 한줄쓰기 가능한데 가독성 떨어지니 안함, 하지말라고 한다
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +23,6 @@ public class PageInfo {
 	private int startPage;
 	private int endPage;
 	
-	//위에 네개 값으로 세개값 만들어주는 클래스 생성
+	//위에 네개 값으로 세개값 만들고 페이지 인포 객체를 만들어서 반환해주는 클래스 생성
 
 }

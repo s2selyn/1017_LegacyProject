@@ -27,13 +27,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service
+@Service // bean 등록
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 	
 	private final BoardMapper boardMapper;
-	// 필드 늘어나면 생성자 수정해야하니 생성자 주입법을 롬복 이용하도록 애노테이션 작성
-	// 생성자 주입 받을 필드니까 final 키워드 필요
+	// 주입받는방법은 생성자주입, 세터주입, 필드주입 세가지 있다
+	// 권장되는 방법은 생성자 만들어서 @Autowired 애노테이션 다는방법이 있다 근데 필드 늘어나면 생성자 수정해야하니 귀찮다
+	// 생성자 주입법을 롬복 이용하도록 애노테이션 작성 --> 롬복에서 제공해준다
+	// 생성자 주입 받을 필드니까 반드시 final 키워드 필요
 	
 	private final Pagination pagination;
 
@@ -42,70 +44,79 @@ public class BoardServiceImpl implements BoardService {
 //		// TODO Auto-generated method stub
 //		return 0;
 //	}
+	// findAll 내부로 옮기도록 인터페이스 수정했으므로 없애버림
 
 	@Override
 	public Map<String, Object> findAll(Long page) {
+		// 여기도 원래 PageInfo pi로 받은것은 서비스에서 해야하는 일이었으니 Long page로 변경
 		
 		Map<String, Object> map = new HashMap();
 		List<BoardDTO> boards = new ArrayList();
 		
 		// 뭐할까용?? ==> 여기서 뭐할까용?? 유 효 성 검 증
-		// url 요청 수정해서 잘못된 값 넘어오는 경우들 확인해줘야함
+		// boardNo가 넘어왔는데, 넘어온게 어쩌라고 할 수 있지? 장난꾸러기가 있을 수 있다
+		// url 수정해서 요청하면 잘못된 값 넘어오는 경우들 확인해줘야함
 		if(page < 1) {
 			
-			// 장난을 쳤나보군, 이녀석 그러면 안된다 하고 알려줌
-			// 억지로 예외를 발생시키면 좋겠다
+			// 1보다 작다면 장난을 쳤나보군, 이녀석 그러면 안된다 하고 알려줌
+			// 억지로 강제로 예외를 발생시키면 좋겠다
 			throw new InvalidArgumentsException("잘못된 접근입니다.");
 			// 직접 이용해보고 따라해봐도 좋다. 아무것도 없는 상태에서는 여기 뭐넣을지 고민 엄청 해야겠지
 			// 기존 사이트들을 많이 이용해보셔
 			
 		}
 		
-		// 페이징처리 객체 생성 -> BoardMapper도 스프링에게 주입받아서 써야함
-		// BoardMapper를 필드에 선언하러 위에 작성
+		// 페이징처리 객체 생성 해야하는데...
+		// 일단 BoardMapper도 스프링에게 주입받아서 써야함
+		// BoardMapper를 필드에 선언하러 위에 작성하고옴
 		// 메소드는 아직 없고 정수로 받아올것임 -> BoardMapper ㄱㄱ
 		int count = boardMapper.selectTotalCount();
+		// 호출 잘 되는지 출력해서 확인
 		log.info("총 게시글 개수 : {}", count);
 		
-		// Pagination Bean으로 등록했으니 필드 추가
+		// Pagination Bean으로 등록했으니 필드 추가하고와야함
 		PageInfo pi = pagination.getPageInfo(count, page.intValue(), 5, 5);
+		// 페이징 처리용 PageInfo 객체 만든것!
 		
 		// 앞에서 offset, limit 계산해서 매퍼에 이거 전달하면서 OFFSET 문법 사용하고 맞는 페이지 게시글들만 조회했다
 		// 해본거 또하면 노잼이니까 안해본거 또해보자
-		// 마이바티스 공식문서 보면 RowBounds 객체 생성해서 offset, limit 전달하기
-		// 총 조회된 개수가 없을수도 있다! 게시글 전체 삭제했거나 아무것도 등록안했거나 -> 굳이 가서 select 할필요도 없고 offset 어쩌고 할필요도 없음, 매퍼 갈필요도 없음
-		// 게시글 있을때만 작업할거니까 조건 -> 있는지 없는지는 count로 판별
-		if(count > 0) {
+		// 마이바티스 공식문서 보면 RowBounds 객체 생성해서 앞에서 했던것처럼 offset, limit 전달하고, 실제 sql문 수행할 때 이 RowBounds 객체를 넘기기만 하면 따로 offset 문법 사용하지 않아도 알아서 그만큼만 조회해서 데리고온다
+		// RowBounds 객체 만들어서 해볼건데,
+		// 총 조회된 개수가 없을수도 있다! 게시글 전체 삭제했거나 아무것도 등록안했거나 -> 게시글이 없으니 굳이 가서 selectBoard 해볼 필요도 없고 RowBounds 만들 필요도 없고 매퍼 갈필요도 없음
+		// 게시글 있을때만 RowBounds만들고 매퍼도 갈 작업 할거니까 조건 -> 있는지 없는지는 count로 판별
+		if(count > 0) { // 0보다 크면 게시글이 있는거다! RowBounds 만들어보자
 			
 			RowBounds rb = new RowBounds((page.intValue() - 1) * 5, 5);
 			// 마이바티스 객체 생성해서 offset, limit 값 전달
 			
-			// Mapper의 메소드 호출하면서 RowBounds 객체 전달
+			// Mapper의 findAll 메소드 호출하면서 RowBounds 객체 전달
 			boards = boardMapper.findAll(rb);
 			// 돌아올거 받아주자
 			
-			// pi랑 boards 두개 담아줘야하는 상황임, 지금 반환타입이 잘못된거죠? 인터페이스 생각해서 짜고 개발했는데 사고가 난거죠
-			// 처음 생각한거랑 달라지면 또 코드수정해야하고 그러다보면 배우고 는다!
-			// 보통 선택지가 두개, 지금의 특징은 두개의 값을 담아야하는데 타입이 다름
+			// 앞단에서 화면에 뿌려야할거임, 페이징 버튼 만들어야하니까 pi도 들고가야함, 서비스에서 컨트롤러로 보내야할게 두개
+			// pi랑 boards 두개 담아줘야하는 상황임, 리턴할때 하나밖에 못돌아가는데 두개돌려야함, 두개를 어디담을까? 선택의 영역
+			// 지금 반환타입이 잘못된거죠? 인터페이스 생각해서 짜고 개발했는데 코드짜다보면 차마 이것까지 생각못했구나!
+			// 처음 생각하더라도 개발하다보면 배우는게 많아지고 실력이 는다, 그럼 이렇게 해야겠다 싶으니 코드 수정해야함
+			// 정해야한다 두개 돌아가야하니까 어딘가에 담아야한다 -->  보통 선택지가 두개, 지금의 특징은 두개의 값을 담아야하는데 타입이 다름
 			// 하나는 둘다 담을 수 있는 무언가(DTO)를 만들기 -> 필드 두개를 놓고 pi, List<BoardDTO> 설정 / 다른 하나는 Map
 			// 타입이 다른 여러개 값을 담으려면 보통 list, set, map 세개
 			// 컬렉션은 각 친구들이 특징이 있다, list는 순서가 보장되어야 하는 상황, set은 중복을 제거해야할 때, map은 값을 효율적으로 관리하고싶을때(key가 있으니까)
 			// 지금은 map이 제일 괜찮은 선택지, 뭘 써도 잘 동작(담아서 앞으로 반환가능) -> 이런 상황에서 개발자들이 선호하는것은 이름 붙여놓는거
 			// 그러고나면 DTO / Map 중에 고민하는것, 정답은 Map이고 이유는 두가지(본질은 같음)
-			// DTO는 생산효율적 측면에서 시간이 오래걸린다는 단점, 나중에 코드 파악하는데 시간이 걸림(DTO 공부해야함)
-			// 그래서 만들어서 사용하기보다는 기존의 것을 사용하는게 효율적, 자바개발자라면 누구나 맵을 알것이다, 키밸류 하려고 썼구나~
-			// 근데 DTO 쓰면 안되는건 아님 -> 아무튼 메소드 초입에 맵 생성
+			// DTO는 생산효율적 측면에서 만드는데 시간이 오래걸린다는 단점, 나중에 코드 파악하는데 시간이 걸림(나중에 다른 개발자가 보면 DTO 공부해야함)
+			// 그래서 만들어서 사용하기보다는 유지보수 측면에서 기존의 것을 사용하는게 효율적, 자바개발자라면 누구나 맵을 알것이다, 키밸류 하려고 썼구나~
+			// 근데 DTO 쓰면 안되는건 아님, 좋은 선택지중에 하나 -> 아무튼 메소드 초입에 맵 생성하고 반환타입 수정
 			
 		}
 		
-		// 만들어둔 맵에 pi, boards 담을건데, list가 맵에 못담는게 문제
+		// 만들어둔 맵에 pi, boards 담을건데, list를 맵에 못담는게 문제
 		map.put("pi", pi);
 		
 		// 지금 if 스코프 벗어난 지역변수라 못담으니 선언을 바깥에서 해준다
 		map.put("boards", boards);
 		
 		return map;
-		// -> 인터페이스 수정
+		// -> 인터페이스 반환형 수정
 		
 	}
 	
