@@ -5,12 +5,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.spring.board.model.dto.BoardDTO;
 import com.kh.spring.board.model.mapper.BoardMapper;
+import com.kh.spring.exception.AuthenticationException;
 import com.kh.spring.exception.InvalidArgumentsException;
+import com.kh.spring.member.model.dto.MemberDTO;
 import com.kh.spring.util.PageInfo;
 import com.kh.spring.util.Pagination;
 
@@ -101,8 +106,29 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public int save(BoardDTO board) {
-		// TODO Auto-generated method stub
+	public int save(BoardDTO board, MultipartFile upfile, HttpSession session) {
+		
+		// 1번 권한검증
+		// board에서 boardWriter 가져오기
+		String boardWriter = board.getBoardWriter();
+		
+		// session에서 loginMember 받아오기
+		MemberDTO loginMember = ((MemberDTO)session.getAttribute("loginMember"));
+		if(loginMember == null) {
+			throw new NullPointerException("로그인해");
+		}
+		// 이거 좀 합리적으로 할수없나? 자바할때 두번이상 한건디?
+		
+		// loginMember에서 userId 가져오기
+		String userId = loginMember.getUserId();
+		
+		// 비교 -> boardWriter != userId 이렇게 하면 안됨 주소값 비교가 된다
+		// loginMember가 null이면 NPE가 일어날텐데 어디서? loginMember. <- 여기서 난다, 널을 가리킴! 널일 수 있는건 loginMember, 널을 가리키는 곳은 참조하는부분이겠지
+		// NPE는 UE임, loginMember 널인지 아닌지 먼저 판별해줘야함 -> loginMember 받아오는곳 다음에서?
+		if(!boardWriter.equals(userId)) {
+			throw new AuthenticationException("권한 없는 접근입니다.");
+		}
+		
 		return 0;
 	}
 

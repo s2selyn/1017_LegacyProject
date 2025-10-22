@@ -2,6 +2,10 @@ package com.kh.spring.board.model.service;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.kh.spring.board.model.dto.BoardDTO;
 
 public interface BoardService {
@@ -40,7 +44,7 @@ public interface BoardService {
 	 * save();
 	 * 
 	 */
-	int save(BoardDTO board);
+	int save(BoardDTO board, MultipartFile upfile, HttpSession session);
 	
 	// 게시글 상세보기(조회수 증가)
 	/*

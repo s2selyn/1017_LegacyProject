@@ -2,11 +2,16 @@ package com.kh.spring.board.controller;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.spring.board.model.dto.BoardDTO;
 import com.kh.spring.board.model.service.BoardService;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +54,38 @@ public class BoardController {
 	@GetMapping("boards/form")
 	public String toForm() {
 		return "board/form";
+	}
+	
+	@PostMapping("boards")
+	public String save(BoardDTO board, MultipartFile upfile, HttpSession session) {
+		// ??? 14:28 board 테이블에 한행 insert 하는건데 첨부파일이 파일데이터로 넘어옴 -> 매개변수 추가
+		
+		log.info("게시글 정보 : {}, 파일 정보 : {}", board, upfile);
+		
+		// MultipartFile이 무조건 생성되어서 전달된다 -> 하던대로는 구분이 불가함
+		// 파일은 아무 의미가 없다, 내용에 데이터가 아무것도 없으면 크기가 없는 0
+		// 그러므로 filename으로 구분해야한다, 이름이 빈문자열인 파일은 존재할 수 없으니까
+		// 첨부파일의 존재유무
+		// MultipartFile객체의 fileName필드값으로 확인해야함
+		
+		// 서비스가서 작업 네개정도 해야할것같은데 뭐해야할까? 용량 초과는 넘어오기 전에 컨트롤러 앞에서 짤림, 멀티파트로 제대로 안왔으면 얘가 받지를 못함, 매개변수로 들어오지를 않음
+		// INSERT INTO BOARD
+		// VALUES (#{boardTitle}, #{boardContent}, #{boardWriter}, #{originName}, #{changeName})
+		// 들어갈 값에 대해 먼저 생각 -> 작성자가 권한이 있는가
+		// 요청 시 전달값 고치는거 아무것도 아님 -> 개발자도구에서 고쳐서 보낼 수 있음
+		
+		// 1. 권한있는 요청인가
+		// 2. 파일 존재유무 체크 => 이름 바꾸기 작업(파일 확장자 체크도 해주면 좋다, 앞에서 뒤에서 다 하는건데 부트 넘어가서 하자) => 파일 업로드
+		// 3. 값들이 유효성 있는 값인가
+		// 4. 바뀐이름을 changeName필드에 담아서 Mapper로 보내기
+		
+		// 1하려면 뭐가있어야해?(2,3은 board랑 upfile로 할수있음) -> session 필요 -> 매개변수 작성
+		// 서비스에 세개 넘겨야함 -> 서비스 인터페이스 수정
+		// 서비스 좀더 집중해서 작업해보자
+		boardService.save(board, upfile, session);
+		
+		return "board/form";
+		
 	}
 
 }
