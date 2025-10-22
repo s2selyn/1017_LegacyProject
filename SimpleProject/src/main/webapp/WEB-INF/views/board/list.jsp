@@ -73,10 +73,16 @@
                 </thead>
                 <tbody>
                 
+                	<script>
+                		function toDetail(boardNo) {
+                			location.href = `boards/\${boardNo}`;
+                		}
+                	</script>
+                
 	                <c:choose>
 	                <c:when test="${ not empty map.boards }">
 	                	<c:forEach var="board" items="${ map.boards }">
-	                    <tr>
+	                    <tr onclick="toDetail(${board.boardNo});">
 	                        <td>${ board.boardNo }</td>
 	                        <td>${ board.boardTitle }</td>
 	                        <td>${ board.boardWriter }</td>
@@ -96,6 +102,7 @@
 	                	</tr>
 	                </c:otherwise>
 	                </c:choose>
+	                
                 </tbody>
             </table>
             <br>

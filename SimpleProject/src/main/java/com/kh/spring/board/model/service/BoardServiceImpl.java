@@ -253,6 +253,7 @@ public class BoardServiceImpl implements BoardService {
 		}
 		
 		int result = boardMapper.save(board);
+		
 		if(result != 1) {
 			// 이럴 때 발생시킬 예외하나 깔끔하게 만들어보기
 			throw new RuntimeException("이게 왜 이럴까요...?");
@@ -264,8 +265,16 @@ public class BoardServiceImpl implements BoardService {
 
 	@Override
 	public BoardDTO findByBoardNo(Long boardNo) {
-		// TODO Auto-generated method stub
+		
+		// 제일 처음에 뭐부터 할까? 장난꾸러기가 있을 수 있겠지? 게시글 번호가 슬래시 뒤에 붙어서 와야하는데 0, -500 이런식의 장난
+		// 장난치지마라고 돌려보내자
+		// 게시글 있는지 없는지 DB에 가야하는데, 있을 수 없는 번호라면 보낼 필요도 없다 -> boardNo가 장난꾸러기인가 아닌가를 검증, 이건 PK, SEQ로 만드니까 1부터 시작, 그보다 작을 수 없다
+		if(boardNo  1) {
+			
+		}
+		
 		return null;
+		
 	}
 
 	@Override

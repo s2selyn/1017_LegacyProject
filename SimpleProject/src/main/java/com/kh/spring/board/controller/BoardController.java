@@ -7,7 +7,9 @@ import javax.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller
+@RequestMapping("boards")
 @RequiredArgsConstructor
 public class BoardController {
 	
@@ -27,7 +30,7 @@ public class BoardController {
 	private final BoardService boardService;
 	
 	// 이번에 매핑은 Get방식이므로
-	@GetMapping("boards")
+	@GetMapping
 	public String findAll(@RequestParam(name="page", defaultValue="1") Long page
 						, Model model) {
 		// 앞에서 전달되는 값 뽑아서 사용하려면 매개변수 자리에 애노테이션 추가
@@ -51,12 +54,12 @@ public class BoardController {
 		
 	}
 	
-	@GetMapping("boards/form")
+	@GetMapping("/form")
 	public String toForm() {
 		return "board/form";
 	}
 	
-	@PostMapping("boards")
+	@PostMapping
 	public String save(BoardDTO board, MultipartFile upfile, HttpSession session) {
 		// ??? 14:28 board 테이블에 한행 insert 하는건데 첨부파일이 파일데이터로 넘어옴 -> 매개변수 추가
 		
@@ -86,6 +89,88 @@ public class BoardController {
 		
 		// save 했다면 게시글 목록 보도록 해줌, 상세보기 했다면 거기로 보냈겠다
 		return "redirect:boards";
+		
+	}
+	
+	// 게시글 번호가 가변적으로 들어오는데, 이걸 어떻게 뽑아서 활용하고 애노테이션을 중복없이 달수있을까? -> 중괄호 -> 내부에 작성하고 싶은 키값, 지금 pk이니까 보통 이런 경우에 id로 많이 쓴다
+	@GetMapping("/{id}") // 몇번 게시글이느냐에 따라 id에 들어올건데, 이걸 매개변수에 받아보자
+	public String toDetail(@PathVariable(name="id") Long boardNo) { // boardNo로 사용할거니까 매개변수 선언, url 경로에서 가변적인 값을 뽑아내야한다, 앞에 애노테이션 추가 -> name 속성값은 메소드 상단의 애노테이션에 적은 키값을 여기에 적어준다
+		// 잘 넘어오는지 출력해서 확인해보기
+		log.info("게시글번호 : {}", boardNo);
+		
+		// 예를들면 카테고리가 있을 수 있음 -> @GetMapping("boards/{category}/{id}") 이런식
+		// @PathVariable(name="category") String category 이렇게 매개변수 추가
+		// 그리고 뽑아서 사용 가능
+		
+		/*
+		 * 중요하닷
+		 * Board는 매핑값을 선생님 마음대로 하기로 약속했다. 통일해서 준비해오셨음
+		 * Board로 조회하고 수정하고 생성하는건데 전부 url을 boards로 시작하게 만들었음
+		 * 
+		 * mapping
+		 * 
+		 * 전체조회 			== 		boards				== GET
+		 * 상세조회(단일조회) 	== 		boards/{boardNo}
+		 * 작성 				== 		boards				== POST
+		 * 
+		 * 포워딩해주는거 맘에안드시는데 억지로 맞춰두심
+		 * 
+		 * 개발회사에 취업했다고 가정, 서비스기업(비투씨?)이라면 파트가 잘 나뉘어있음, 뒷단작업자와 앞단작업자가 다르다는 뜻
+		 * jsp 작업하는 사람이랑, controller부터 그 이후 작업하는 사람이랑 사람부서팀 다다른거지
+		 * 문제가 생긴다. 결국 앞사람이 매핑값 써서 뒷단사람에게 넘겨줘야함
+		 * 근데 우리 테이블 네다섯개 작업도 이렇게 많이 필요한데 테이블 200개 300개 이래버리면 CRUD 작업 전부 필요할 때 매핑값 엄청많아진다
+		 * 나혼자 작업하면 내가하니까 앞뒤보고 작업하면 되지만, 나뉘어있고 마주칠일도 없을수도있음, 따로작업해도 맞춰서 작업하도록 해야함
+		 * 어느정도 규약이 정해져 있다면 생각을 통일시킬 수 있으니 굳이 소통하지 않아도 작업이 수월해지겠지
+		 * 그중의 하나의 방법, url에 무슨 자원을 요청하는지 쓰는것
+		 * 요청 매핑 경로(값)에 앞에서 보내는 요청이 무슨 자원을 요청하는건지 적는다
+		 * 
+		 * 지금은 board와 관련된 자원을 여기서 처리하니까 매핑값을 boards로 통일해버림
+		 * 그럼 앞서 배운 내용과 충돌, 매핑값이 같으면 서버가 안올라간다, 충돌이나니까
+		 * 이건 너무 당연한걸...? 매핑값 똑같이 해버리면 서버 실행부터 빵터짐
+		 * 
+		 * 선생님이 만들어두신건 방식을 차이뒀다
+		 * 똑같은 요청매핑이지만 방식이 다르면 구분이 가능해짐
+		 * 이렇게 하면 앞단 개발자는 편해, 요청자원을 적으면 됨
+		 * 뒷단개발자도 편함, 어차피 모든 요청에 boards가 들어가야한다면 이걸 Controller에서 뽑을 수 있음
+		 * -> @RequestMapping("boards") 이걸로 뽑아버리고
+		 * -> 메소드에 붙은 boards 부분을 다 날릴 수 있음
+		 * 그러면 이 컨트롤러는 boards로 시작하는 요청을 모두 처리할 수 있게 된다
+		 * 
+		 * 문제가 생김
+		 * SELECT == GET / INSERT == POST
+		 * select 전체조회라면 아무것도 안붙이고, pk로 조회하면 boards에 /pk로 붙여
+		 * ??? 16:37 insert의 경우에는?
+		 * 
+		 * 이러고나면 UPDATE, DELETE가 남는다
+		 * @PutMapping 은 업데이트(또는 @FetchMapping)
+		 * 
+		 * @DeleteMapping 은 딜리트
+		 * 
+		 * 어떤 자원을 요청하는지는 url에 적고
+		 * CRUD는 메소드로 구분하자
+		 * 
+		 * 모두가 똑같이 이렇게 생각한다면 이것때문에 고민할 필요도 없고 앞뒷단 이슈 생길일이 없다
+		 * 다음주부터는 이렇게 할건데, 아직 앞단에서 update, delete 요청을 보내는 방법을 모른다
+		 * GET / POST로 보내는 방식은 안다
+		 * ??? 16:39 a태그 등을 사용
+		 * 
+		 * 아무튼 @DeleteMapping, @PutMapping은 배워야할것들임
+		 * 
+		 * ??? 16:45 인터파크 구경
+		 * 리액트 배우고 앞단은 리액트로 만들고 뒷단은 스프링부트로 만들것임 <- 최종형태
+		 * 
+		 * ??? 16:46 앞에 상대경로 방식으로 해놔서 절대경로로 바꾸는 작업도 추가해야한다
+		 * 일단 이러고 작업하자
+		 * 
+		 */
+		
+		// 조회수 증가
+		// 조회수 증가에 성공했다면 SELECT로 조회
+		// 만약에 없는 게시글 번호라면 예외발생
+		// 여기서 뭐 할거없음, 클릭해서 조회라 권한체크도 필요없으니 바로 서비스단 넘어가자
+		boardService.findByBoardNo(boardNo);
+		
+		return "board/detail";
 		
 	}
 
