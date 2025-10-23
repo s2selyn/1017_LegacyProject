@@ -13,6 +13,7 @@
 	
 	<jsp:include page="../include/header.jsp" />
 	
+	<div class="innerOuter">
 	<pre>
 		웹페이지 전체를 새로고침하지 않고
 		서버와 비동기 통신을 하여 화면을 갱신할 수 있는 기술 패턴
@@ -42,7 +43,71 @@
 		2. 서버는 요청 처리 후 데이터 응답(동기식 요청의 html 응답 아님, 문자열 => JSON형태로)
 		아이디 중복조회, 댓글작성, 댓글조회 어떻게 했는지? 서버가 어떻게 데이터 응답함? 아이디 중복조회 NNNNN, NNNNY / 댓글조회 [{"replyNo" : 1, "replyWriter" : "홍길동", "replyWriter" : "이거 기억안나세요???"}]
 		3. 클라이언트는 응답받은 데이터로 자바스크립트 DOM요소객체를 갱신(update)
+		
+		- jQuery로 ajax요청 시 주요 속성
+		
+		- url : 요청할 URL(필수)
+		- data : 요청 시 전달값({키 : 밸류})
+		- type : 요청 전송방식(GET/POST/PUT/DELETE)
+				 GET방식 : 조회요청(SELECT)
+				 POST방식 : 데이터 생성 요청(INSERT)
+				 PUT방식 : 데이터 갱신 요청(UPDATE)
+				 DELETE방식 : 데이터 삭제 요청(DELETE)
+		(ajax가 이 요청방식으로 보낼 수 있으니까 어제 설명했던 get, post, delete mapping 다 사용할 수 있음)
+		- success : AJAX 통신 성공 시 실행할 함수를 정의
+		컨트롤러가 바뀔것이다
 	</pre>
+	
+	<h3>1. 버튼 클릭 해서 GET방식으로 요청 보내서 데이터 받아서 화면에 출력!</h3>
+	
+	<div class="form-group">
+		<div class="form-control">
+			입력 : <input type="text" id="ajax-input">
+		</div>
+		<div class="form-control">
+			<button class="btn btn-sm btn-success"
+			id="ajax-btn" onclick="test1();">AJAX로 요청보내기</button>
+		</div>
+	</div>
+	
+	응답 : <label id="result">현재 응답 없음</label>
+	
+	<%-- 계획 :
+		인풋요소에 아무거나 쓰고 요청보내기 버튼을 누르면
+		AJAX요청을 보내서
+		요청을 받아서 처리해주는 RequestHandler가 값을 받아서 응답해주고
+		받은 응답데이터를 라벨요소 Content영역에 출력할 것
+	--%>
+	
+	<script>
+		// ??? 12:17 AJAX 요청 보내려면 script 요소 작성해야함
+		function test1() {
+			
+			// jQuery로 ajax 요청 보내려면 달러사인 참조해서 메소드호출(콜)
+			$.ajax({
+			// 요청시 보낼값이 많으니 객체로 전달한다
+			
+				url : "test", // 꼭!	
+				type : "get",
+				data : {
+					"input" : $("#ajax-input").val() // 입력값도 보내보자
+				},
+				success : function(response) { // 성공 시 실행, 출력해볼거니까 매개변수전달
+					
+					console.log(response);
+					// 이러고 브라우저 테스트하면 핸들러 없어서 404, 컨트롤러에 핸들러 추가해야하는데 클래스생성
+					// 컨트롤러 작업했음, 응답을 컨텐트 영역에 출력해줄것이다 -> 요소에 접근 먼저
+					document.getElementById("result").innerHTML = response;
+					
+				}
+				
+			});
+			
+		}
+	
+	</script>
+	
+	</div>
 	
 	<jsp:include page="../include/footer.jsp" />
 
