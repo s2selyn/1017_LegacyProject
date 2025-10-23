@@ -205,10 +205,74 @@
 				url : `board/\${num}`,
 				type : "get",
 				success : result => {
+					
 					console.log(result);
+					// 응답 데이터를 화면에 출력, 이거 필드명으로 돌아온다
+					document.querySelector("#title").innerText = result.boardTitle;
+					document.querySelector("#writer").innerText = result.boardWriter;
+					document.querySelector("#content").innerText = result.boardContent;
+					document.querySelector("#date").innerText = result.createDate;
+					
+					// 첨부파일은 있을수도 있고 없을수도 있음
+					const imgEl = document.querySelector("#board-img");
+					imgEl.src = result.changeName != undefined ? result.changeName : "";
+					
+					// 댓글도 보여줄것임
+					const replies = result.replies;
+					
+					const el = replies.map(e => {
+						
+						return (
+								`<div>
+									<label style="330px">댓글 작성자 : \${e.replyWriter}</label>
+									<label style="400px">댓글 내용 : \${e.replyContent}</label>
+									<label style="150px">작성일 : \${e.createDate}</label>
+								</div>`
+						)
+						
+					}).join("");
+					
+					document.querySelector("#reply-area").innerHTML = el;
+					
 				}
 				
 			});
+			
+		}
+	</script>
+	
+	<hr>
+	
+	<button class="btn btn-lg btn-primary" onclick="btn1();">버튼1</button>
+	<br>
+	<button class="btn btn-lg btn-primary" onclick="btn2();">버튼2</button>
+	<script>
+		function btn1() {
+			
+			$.ajax({
+				
+				url : "revol/c",
+				type : "post",
+				success : res => {
+					// alert(res.boardTitle);
+					console.log(res);
+				}
+				
+			})
+			
+		}
+		
+		function btn2() {
+			
+			$.ajax({
+				
+				url : "revol/d",
+				success : res => {
+					// alert(res.boardTitle);
+					console.log(res);
+				}
+				
+			})
 			
 		}
 	</script>

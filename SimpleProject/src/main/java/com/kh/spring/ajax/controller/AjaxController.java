@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.gson.Gson;
 import com.kh.spring.board.model.dto.BoardDTO;
 import com.kh.spring.board.model.dto.ReplyDTO;
 import com.kh.spring.board.model.service.BoardService;
@@ -101,17 +102,40 @@ public class AjaxController {
 	}
 	
 	@ResponseBody
-	@GetMapping("board/{num}")
-	public String detail(@PathVariable(value="num") Long boardNo) {
+	@GetMapping(value="board/{num}", produces="application/json; charset=UTF-8")
+	public BoardDTO detail(@PathVariable(value="num") Long boardNo) {
 		// 이번엔 url 경로에 달려있는 boardNo를 매개변수로 뽑아서 넘겨줘야함 -> PathVariable 애노테이션에 value속성추가(name도 가능)
 		log.info("게시글 번호 잘 오나용 ㅎ : {}", boardNo);
 		// 잘 넘어가면 다 끝남~ 우리 boardNo 있으면 board 조회해오는거 다 해놨음
 		BoardDTO board = boardService.findByBoardNo(boardNo);
 		log.info("혹시 모르니 찍어봄 : {}", board);
-		
 		// 잘 돌아온다, 이제 boardDTO를 보내야한다, 앞에선 그냥 문자열 보냈는데...
+		// 이친구 들고가야하는데 JSON으로 어떻게 만들지?
+		/* 아 편하다~
+		 * {
+		 * 	"boardNo" : 19,
+		 * 	"boardTitle" : "첨부파일있이",
+		 * 	...
+		 * 	"replies" : [
+		 * 		{
+		 * 			"replyNo" : 5,
+		 * 			"replyContent" : "ㅎㅎ"
+		 * 			...
+		 * 		},
+		 * 		{
+		 * 		}
+		 * 	]
+		 * }
+		 * 
+		 */
+		// 이거 귀찮으니 json array 만들고 json object 가지고도 할 수 있는데 이것도 복잡하고 귀찮음 -> gson
 		
-		return "아재밌땅 ㅎ";
+		// return new Gson().toJson(board); 원래 이렇게 했는데 똑같이하는거 노잼임 이렇게 안할거임
+		// Gson으로 돌려줄거니까 @GetMapping 수정 -> produces 속성값 별 다섯개였는데 다 잊었죠 ㅎ
+		// 잘 나오긴 한다, board만 반환하는걸로 수정하고 반환형도 수정
+		return board;
+		// 스프링이 컨버터로 지가 알아서 함, responsebody로 가는데 json으로 가고싶다고 써놨으니 바꿔준다
+		// 라이브러리 꼭 추가해줘야 이걸 알아서 해준다
 		
 	}
 	
