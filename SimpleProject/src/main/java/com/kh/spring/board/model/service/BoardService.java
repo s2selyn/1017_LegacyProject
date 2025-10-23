@@ -7,6 +7,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.spring.board.model.dto.BoardDTO;
+import com.kh.spring.board.model.dto.ReplyDTO;
 
 public interface BoardService {
 	
@@ -78,5 +79,7 @@ public interface BoardService {
 	
 	// ----- 이 아래는 댓글 관련 작업할건데 작업속도 보고 결정(수업 or 숙제)
 	// 댓글 서비스
+	
+	void insertReply(ReplyDTO reply);
 
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.spring.board.model.dto.BoardDTO;
+import com.kh.spring.board.model.dto.ReplyDTO;
 import com.kh.spring.board.model.mapper.BoardMapper;
 import com.kh.spring.exception.AuthenticationException;
 import com.kh.spring.exception.InvalidArgumentsException;
@@ -326,6 +327,12 @@ public class BoardServiceImpl implements BoardService {
 	public int update(BoardDTO board) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void insertReply(ReplyDTO reply) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

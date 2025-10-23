@@ -1,9 +1,14 @@
 package com.kh.spring.ajax.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.kh.spring.board.model.dto.ReplyDTO;
+import com.kh.spring.board.model.service.BoardService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,6 +58,24 @@ public class AjaxController {
 		// 문자열을 반환하고 있다
 		
 		// return "ajax/ajax";
+		
+	}
+	
+	private final BoardService boardService;
+	
+	@Autowired
+	public AjaxController(BoardService boardService) {
+		this.boardService = boardService;
+	}
+	
+	@PostMapping("replies")
+	public String insertReply(ReplyDTO reply) {
+		// 앞단에서 넘어온거 받을 매개변수?
+		
+		log.info("{}", reply);
+		boardService.insertReply(reply); // <- ReplyDTO로 받아서 넘겨야한다
+		
+		return "";
 		
 	}
 	

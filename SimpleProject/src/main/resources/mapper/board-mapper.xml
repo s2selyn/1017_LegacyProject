@@ -131,5 +131,21 @@ namespace 속성값을 BoardMapper 인터페이스의 풀클래스명으로 적�
 		 WHERE
 		       BOARD_NO = #{boardNo}
 	</select>
+	
+	<insert id="insertReply"
+			parameterType="com.kh.spring.board.model.dto.ReplyDTO">
+		INSERT
+		  INTO
+		       REPLY
+		VALUES
+		       (
+		       SEQ_RNO.NEXTVAL
+		     , #{replyContent}
+		     , #{refBno}
+		     , #{replyWriter}
+		     , SYSDATE
+		     , DEFAULT
+		       )
+	</insert>
 
 </mapper>

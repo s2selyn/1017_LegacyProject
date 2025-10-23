@@ -107,6 +107,61 @@
 	
 	</script>
 	
+	<hr>
+	
+	<h3>2. 댓글 작성하기</h3>
+	
+	<%--
+		계획 : 글번호를 입력받고, 댓글 내용을 입력받은 뒤
+			  버튼을 클릭하면 AJAX요청을 보내 Reply테이블에 한 행 INSERT
+			  이거 하려면 writer가 필요한데 여기서 안받고 세션으로 뒷단에서 검증하자
+			  앞에서는 input요소만 두개해서 받아보자
+		
+		ajax이므로 폼태그가 필요없다
+	--%>
+	
+	<div class="form-group">
+		<div class="form-control">
+			글 번호 : <input type="text" id="num" />
+		</div>
+		<div class="form-control">
+			댓글 내용 : <input type="text" id="reply-content" />
+		</div>
+		<div class="form-control">
+			<button onclick="insert();" class="btn btn-sm btn-info">댓글 작성하기</button>
+		</div>
+	</div>
+	
+	<script>
+		function insert() {
+			
+			// 미리 value 뽑아내자
+			const boardNo = document.getElementById("num").value;
+			const replyContent = document.getElementById("reply-content").value;
+			
+			// ajax 요청 보내기
+			$.ajax({
+				
+				url : "replies",
+				type : "post", // insert 할거니까 POST방식 전송
+				data : {
+					
+					refBno : boardNo,
+					replyContent : replyContent
+					// 이렇게 전달하려고 하는데 컨트롤러에서 요청시의 전달값을 빼서 써야한다
+					// 폼태그로 했다면 어떻게 받았을까? reply에 한 행 insert 하는거니까? 이번엔 거꾸로 해볼까? board-mapper.xml에 작업
+					// boardNo -> refBno로 필드명으로 변경
+					
+				},
+				success : function(response) {
+					console.log(response);
+				}
+				
+			});
+			
+		}
+	</script>
+	
 	</div>
 	
 	<jsp:include page="../include/footer.jsp" />
