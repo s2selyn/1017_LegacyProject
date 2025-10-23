@@ -101,7 +101,7 @@ public class BoardController {
 	public String toDetail(@PathVariable(name="id") Long boardNo,
 						   Model model) { // boardNo로 사용할거니까 매개변수 선언, url 경로에서 가변적인 값을 뽑아내야한다, 앞에 애노테이션 추가 -> name 속성값은 메소드 상단의 애노테이션에 적은 키값을 여기에 적어준다
 		// 잘 넘어오는지 출력해서 확인해보기
-		log.info("게시글번호 : {}", boardNo);
+		// log.info("게시글번호 : {}", boardNo);
 		
 		// 예를들면 카테고리가 있을 수 있음 -> @GetMapping("boards/{category}/{id}") 이런식
 		// @PathVariable(name="category") String category 이렇게 매개변수 추가

@@ -23,17 +23,16 @@ public class AjaxController {
 	
 	/*
 	 * 응답할 데이터를 문자열로 반환
-	 * ModelAndView의 viewName필드에 return한 문자열값이 대입(setter로 대입된다 View 객체에)
-	 * 이 상태에서 => DispatcherServlet으로 전달되고
-	 * 이건 다시 => ViewResolver로 보내버림
+	 * ModelAndView의 viewName필드에 return한 문자열값이 대입(View 객체에 setter로 대입된다)
+	 * 이 상태에서 => DispatcherServlet으로 전달되고, 이건 다시 => ViewResolver로 보내버림
 	 * 이건 우리가 원하는게 아니야! jsp를 찾아서 보내는게 아니라 순수하게 문자열 데이터만 응답하고싶다
 	 * 
-	 * 앞에서는 ajax 구현했을때는 서블릿에서 이 작업을 어떻게함? -> response.setContentType("text/html; charset=UTF-8")
+	 * 앞에서는 ajax 구현했을때는 서블릿에서 이 작업을 어떻게함? -> response.setContentType("text/html; charset=UTF-8");
 	 * PrintWriter pw = response.getWriter();
 	 * pw.print(보낼거);
-	 * 컨텐트타입지정하고스트림얻어와서스트림으로보냄
-	 * 여기는 지금 response가 없음, 디스패처 서블릿이 관리함, DS가 이런식으로 작업하도록 알려줘야함
-	 * ??? 보낼때는 컨텐트 타입을 지정하고 보낼 방식을 정해야함
+	 * 컨텐트 타입 지정하고 스트림 얻어와서 스트림으로 보냄
+	 * 여기는 지금 response가 없음, 디스패처 서블릿이 관리함, DS가 이런식으로 작업하도록 알려줘야함(컨텐트타입도 알려주고 프린트로 보낼거야 jsp 가는거아니야~)
+	 * 보낼때는 컨텐트 타입을 지정하고 보낼 방식을 정해야함
 	 * 
 	 * 반환하는 String타입의 값이 View의 정보가 아닌 응답데이터라는 것을 명시해서
 	 * => MessageConverter라는 빈으로 이동하게끔 해줘야한다
@@ -44,25 +43,29 @@ public class AjaxController {
 	 * 
 	 * 한글 깨져서 온다 setContentType은 아직 안했음 -> 이건 response가지고 한다
 	 * 또 방법이 있음 -> 이건 GetMapping 괄호내부에 추가함 -> produces="text/html; charset=UTF-8"
-	 * 이거적으면 앞에 test가 구분이 안되니까 빨간줄 -> 속성적어주면 해결 -> value="test"
+	 * 이거적으면 앞에 test가 구분이 안되니까 빨간줄 -> 속성적어주면 해결(속성값 하나만 있을땐 자동으로 알아서 들어갔음, 지금은 produces 속성 추가해서 어디로 들어갈지 구분이 안되므로) -> value="test"
 	 * 
 	 */
 	// 요청 받아서 처리해줄 RequestHandler 만들어줘잉, 아무도 요청처리기라고 안한다 리퀘스트 핸들러라고 하니까 그렇게 불러야함...
 	@ResponseBody
 	@GetMapping(value="test", produces="text/html; charset=UTF-8") // mapping값은 jsp에서 url에 작성한것과 동일하게
 	public String ajaxReturn(@RequestParam(name="input") String value) {
-		// 요청시 전달값 뽑아서 확인하기로 했으니까 매개변수 자리에 input key값으로 뽑아써야하니까 -> @RequestParam(name="input")
+		// 요청시 전달값 뽑아서 확인하기로 했으니까 매개변수 자리에 input key값으로 넘어온 value 뽑아써야하니까 -> @RequestParam(name="input")
 		
 		log.info("잘넘어옴? {}", value);
+		// return "ajax/ajax"; 확인하고 주석처리
+		// 앞단에 딱히 보낼 게 없어서 이렇게 했는데, 입력값은 잘 넘어오고 브라우저에서 받은것은 ajax.jsp
+		// return "이게뭐냐고!"; 이걸로 보내면? -> 404
 		
 		// DB에 잘 다녀왔다고 가정
 		// 오늘 점심은 짬뽕이다! ==> 조회해옴
 		String lunchMenu = "오늘 점심은 짬뽕이다!";
+		// 이걸 응답해주고 싶음 -> 이거 보내버리면? 입력 아무거나 해보고 나면 404가 돌아온다 -> 메세지 보면 JSP file Not Found
+		return lunchMenu;
+		// 지금 리퀘스트 핸들러에서 문자열을 반환하고 있다 -> 이러면 무슨일이 일어남? 이 메소드 위에 여러줄 주석 확인
 		
-		return lunchMenu; // 이걸 응답해주고 싶음
-		// 문자열을 반환하고 있다
-		
-		// return "ajax/ajax";
+		// @ResponseBody 추가하고 브라우저 확인하면 브라우저에서 404는 뜨지않고, STS 콘솔에 전달값 나온다
+		// 근데 Response는 한글 깨지고 느낌표만 나옴, 응답할때 컨텐트 타입 지정안함 -> 다시 애노테이션(주석확인) -> 그리고 다시 브라우저에서 확인
 		
 	}
 	
