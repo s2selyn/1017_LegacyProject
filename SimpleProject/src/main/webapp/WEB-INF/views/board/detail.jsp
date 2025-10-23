@@ -40,29 +40,39 @@
             <a class="btn btn-secondary" style="float:right;" href="">목록으로</a>
             <br><br>
 
-            <table id="contentArea" algin="center" class="table">
+            <table id="contentArea" align="center" class="table">
                 <tr>
                     <th width="100">제목</th>
-                    <td colspan="3">제목입니다요</td>
+                    <td colspan="3">${ board.boardTitle }</td>
                 </tr>
                 <tr>
                     <th>작성자</th>
-                    <td>admin</td>
+                    <td>${ board.boardWriter }</td>
                     <th>작성일</th>
-                    <td>2025-09-07</td>
+                    <td>${ board.createDate }</td>
                 </tr>
                 <tr>
                     <th>첨부파일</th>
-                    <td colspan="3">
-                        <a href="" download="">파일명.jpg</a>
-                    </td>
+                    
+                    <c:choose>
+                    <c:when test="${ not empty board.changeName }">
+	                    <td colspan="3">
+	                        <a href="${ board.changeName }" download="${ board.changeName }">${ board.originName }</a>
+	                    </td>
+                    </c:when>
+                    <c:otherwise>
+                    	<td colspan="3">
+	                        첨부파일이 존재하지 않습니다.
+	                    </td>
+                    </c:otherwise>
+                    </c:choose>
                 </tr>
                 <tr>
                     <th>내용</th>
                     <td colspan="3"></td>
                 </tr>
                 <tr>
-                    <td colspan="4"><p style="height:150px;">게시판 내용이 들어갈 자리!!</p></td>
+                    <td colspan="4"><p style="height:150px;">${ board.boardContent }</p></td>
                 </tr>
             </table>
             <br>

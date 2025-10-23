@@ -300,10 +300,14 @@ public class BoardServiceImpl implements BoardService {
 		}
 		
 		// insert 성공했다면 조회 해와야한다
-		BoardDTO board = boardMapper.findByBoardNo(boardNo);
+		// BoardDTO board = boardMapper.findByBoardNo(boardNo);
 		// 조회한것을 반환받는다
 		// 조회수 증가되고 조회하러 DB가는 사이에 게시글 삭제되었을 수 있음, 그럼 select 조건절에서 걸리니까 조회결과 없음
 		// 지워진걸 들고가면 안된다! 그러니까 한번더 board가 조회가 안됐다면 null과 같을거니까 비교해야함
+		
+		// 댓글까지 같이 들고오도록 작성하고 변경
+		BoardDTO board = boardMapper.findBoardAndReply(boardNo);
+		
 		if(board == null) {
 			throw new InvalidArgumentsException("삭제된 게시글입니다.");
 		}
