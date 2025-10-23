@@ -57,7 +57,7 @@
                     <c:choose>
                     <c:when test="${ not empty board.changeName }">
 	                    <td colspan="3">
-	                        <a href="${ board.changeName }" download="${ board.changeName }">${ board.originName }</a>
+	                        <a href="${ board.changeName }" download>${ board.originName }</a>
 	                    </td>
                     </c:when>
                     <c:otherwise>
@@ -97,21 +97,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <th>user02</th>
-                        <td>ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ</td>
-                        <td>2025-09-12</td>
-                    </tr>
-                    <tr>
-                        <th>user01</th>
-                        <td>재밌어요</td>
-                        <td>2025-09-11</td>
-                    </tr>
-                    <tr>
-                        <th>admin</th>
-                        <td>댓글입니다!!</td>
-                        <td>2025-09-10</td>
-                    </tr>
+                    <c:choose>
+                    <c:when test="${ not empty board.replies }">
+	                    <c:forEach items="${ board.replies }" var="reply">
+		                    <tr>
+		                        <th>${ reply.replyWriter }</th>
+		                        <td>${ reply.replyContent }</td>
+		                        <td>${ reply.createDate }</td>
+		                    </tr>
+	                    </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+	                    <tr>
+	                    	<th colspan="3">댓글이 없는거셈~~~</th>
+	                    </tr>
+                    </c:otherwise>
+                    </c:choose>
                 </tbody>
             </table>
         </div>
