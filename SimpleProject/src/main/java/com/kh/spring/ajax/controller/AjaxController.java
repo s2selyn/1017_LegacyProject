@@ -70,7 +70,9 @@ public class AjaxController {
 	
 	@PostMapping("replies")
 	public String insertReply(ReplyDTO reply) {
-		// 앞단에서 넘어온거 받을 매개변수?
+		// 앞단에서 넘어온거 받을 매개변수? -> 지금 하는거 댓글작성, reply 테이블에 insert하기위해서 세개필요 댓글내용 게시글번호 작성자아이디
+		// 앞에서 지금 넘기는 값은 글번호, 댓글내용 / 작성자아이디는 세션에서 뽑을것이다 로그인한거
+		// 뽑을거 2개니까 앞에서 넘길때 가공해서 넘긴다 → 나중에 reply로 가공해서 보낼거니까 매개변수자리에 DTO작성
 		
 		log.info("{}", reply);
 		boardService.insertReply(reply); // <- ReplyDTO로 받아서 넘겨야한다

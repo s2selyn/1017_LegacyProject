@@ -331,7 +331,7 @@ public class BoardServiceImpl implements BoardService {
 
 	@Override
 	public void insertReply(ReplyDTO reply) {
-		// TODO Auto-generated method stub
+		// ??? 일단 컨트롤러 가서 작업함
 		
 	}
 

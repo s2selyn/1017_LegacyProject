@@ -39,6 +39,6 @@ public interface BoardMapper {
 	// 스타트업 갈거 아니면 기존개발, 솔루션, sql문 등이 있을것이다, 이전에 회사나 팀이 개발했던 방식이 있을것이니 그걸 준다
 	// 개발자가 만들지만 다 회사 소유지, 회사코드가 다 있음
 	
-	int insertReply(ReplyDTO reply); // 서비스 인터페이스
+	int insertReply(ReplyDTO reply); // 서비스 인터페이스로
 
 }
