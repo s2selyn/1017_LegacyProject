@@ -155,6 +155,57 @@
 				},
 				success : function(response) {
 					console.log(response);
+					
+					if(response === "success") {
+						alert("댓글 작성 성공 ~");
+					} else {
+						alert("댓글 작성 실패 메롱");
+					}
+					
+					// 성공하든 실패하든 input요소를 비워주자
+					document.getElementById("num").value = "";
+					document.getElementById("reply-content").value = "";
+					
+				}
+				
+			});
+			
+		}
+	</script>
+	
+	<hr>
+	
+	<h4>자 재밌는거 해보겠습니다. AJAX요청으로 게시글 상세조회 해보기</h4>
+	
+	<%-- 오전에 했던거 로직 짜놓은것과 동일 --%>
+	<div>
+		<h3>게시글 자세히보기</h3>
+		
+		제목 : <p id="title"></p>
+		작성자 : <p id="writer"></p>
+		내용 : <p id="content"></p>
+		작성일 : <p id="date"></p>
+		<hr>
+		<img id="board-img" />
+		<hr>
+		<div id="reply-area">
+		
+		</div>
+	</div>
+	<br>
+	게시글 번호를 입력하세요 : <input type="text" id="detail" />
+	<button onclick="detail();">게시글 보여주세용~</button>
+	
+	<script>
+		function detail() {
+			
+			const num = document.getElementById("detail").value;
+			$.ajax({
+				
+				url : `board/\${num}`,
+				type : "get",
+				success : result => {
+					console.log(result);
 				}
 				
 			});

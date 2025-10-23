@@ -330,8 +330,39 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public void insertReply(ReplyDTO reply) {
-		// ??? 일단 컨트롤러 가서 작업함
+	public int insertReply(ReplyDTO reply, HttpSession session) {
+		// 일단 컨트롤러 가서 작업함, session 추가했음(컨트롤러에서 전달 -> 인터페이스 수정 -> 여기 수정)
+		
+		// 여기서 어제 한 실수가 나온다
+		MemberDTO loginMember = ((MemberDTO)session.getAttribute("loginMember"));
+		// 로그인안했다면 이거 null임
+		// 권한없다고 던져야함
+		if(loginMember == null) {
+			
+			throw new AuthenticationException("이 장면을 꿈에서 본거같은데");
+			// 이거 save 할 때 봤음 -> 책임분리 하려고 validateUser 메소드로 빼버림 -> 이거 근데 어제 분리할때...? 하나의 메소드에서 두개 검증함
+			// 로그인했는지, 로그인한사람이 작성자인지 ??? 15:09
+			// 어제 분리해놨다면? 호출만해서 사용할수 있었겠다...
+			// 여기서 절차하고 어떤코드 쓸지 개발하기전에 미리 생각해둘수있다면? 내거말고 팀원이랑 공유해서 같은동작 공통모듈로 뽑아서 처리할수있게
+			// 이거 단순히 일 두번하는 비효율적임, 같은작업 2번이상 여러군데서 하면 비효율적이다
+			
+		}
+		
+		// 유효값 검증해야함
+		// 댓글번호 이거 지금 게시글에 단거 아니고 기능만 만들었으니 지맘대로인 게시글, 없는 게시글로 insert하려고 할수도있음, 이러면 insert할때 부모키 찾을수없다고 난리남(SQL Exception)
+		Long boardNo = reply.getRefBno();
+		
+		// 번호로 조회하는건 만들어뒀음, 조회해보고
+		BoardDTO board = boardMapper.findByBoardNo(boardNo);
+		// 조회된거 없으면 예외
+		if(board == null) {
+			throw new InvalidArgumentsException("올바르지 않은 게시글 번호입니다.");
+		}
+		
+		// null이 아닐때는 로그인멤버에서 아이디 가져오기
+		reply.setReplyWriter(loginMember.getUserId());
+		
+		return boardMapper.insertReply(reply);
 		
 	}
 

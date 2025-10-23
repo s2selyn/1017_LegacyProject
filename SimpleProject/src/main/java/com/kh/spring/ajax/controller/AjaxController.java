@@ -1,12 +1,16 @@
 package com.kh.spring.ajax.controller;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.kh.spring.board.model.dto.BoardDTO;
 import com.kh.spring.board.model.dto.ReplyDTO;
 import com.kh.spring.board.model.service.BoardService;
 
@@ -68,16 +72,46 @@ public class AjaxController {
 		this.boardService = boardService;
 	}
 	
-	@PostMapping("replies")
-	public String insertReply(ReplyDTO reply) {
+	@ResponseBody
+	@PostMapping(value="replies", produces="text/html; charset=UTF-8")
+	public String insertReply(ReplyDTO reply, HttpSession session) {
 		// 앞단에서 넘어온거 받을 매개변수? -> 지금 하는거 댓글작성, reply 테이블에 insert하기위해서 세개필요 댓글내용 게시글번호 작성자아이디
 		// 앞에서 지금 넘기는 값은 글번호, 댓글내용 / 작성자아이디는 세션에서 뽑을것이다 로그인한거
 		// 뽑을거 2개니까 앞에서 넘길때 가공해서 넘긴다 → 나중에 reply로 가공해서 보낼거니까 매개변수자리에 DTO작성
 		
-		log.info("{}", reply);
-		boardService.insertReply(reply); // <- ReplyDTO로 받아서 넘겨야한다
+		// log.info("{}", reply);
+		int result = boardService.insertReply(reply, session); // <- ReplyDTO로 받아서 넘겨야한다
+		// replyWriter가 없으니까 세션 넘겨줘야한다 로그인 검증도 해야함
+		// ??? 15:15 성공하든 실패하든 데이터 돌려줘야한다 -> 애노테이션
+		// @PostMapping 속성수정
 		
-		return "";
+		// return String.valueOf(result);
+		// 성공하면 1, 실패하면 0 갈텐데... 별로 좋은거아님
+		// 어제부터 얘기하는 앞단개발자 뒷단개발자 다른상황
+		// 앞단에서 댓글작성하려고 보냈는데 뒷단에서 0, 1 보냈다면? 우리는 유추가능, DML이니까 성공1 실패0이겠네? 이럴수있지
+		// 근데 앞단만 한 사람이 1/0 보면 애매함, 명확하게 성공실패여부 보내주는게 좋겠다
+		// 문자열로 보내는걸로 수정
+		return result > 0 ? "success" : "fail";
+		// 0, 1보다는 훨씬 명확하다 그래도 마음에 들진 않음, 성공입니다 실패입니다 적어버릴수있지만 영어가 좋다, 메세지같은것도 영어로 해주는게 좋음
+		// 왜? 다 하고 깃허브 올릴거아녀, 남들 보라고 올리는거임, 일단은 이게 어쨌든 영어가 공용어 느낌이니 맞춰주는게 좋을지도
+		// 코드는 공공재이다 항상 생각해야함 누구나 보고 쓰게해야함 ChatGPT도 코드 다 공개되어있다
+		// 누구나 보고 쓰고 할 수 있어야함, 그러니까 항상 코드를 쓸 때는 남한테 보여주는 일기다 라고 생각하고 써야함
+		// 남한테 보여주는 일기장이라면 신경써서 써야하겠지?
+		
+	}
+	
+	@ResponseBody
+	@GetMapping("board/{num}")
+	public String detail(@PathVariable(value="num") Long boardNo) {
+		// 이번엔 url 경로에 달려있는 boardNo를 매개변수로 뽑아서 넘겨줘야함 -> PathVariable 애노테이션에 value속성추가(name도 가능)
+		log.info("게시글 번호 잘 오나용 ㅎ : {}", boardNo);
+		// 잘 넘어가면 다 끝남~ 우리 boardNo 있으면 board 조회해오는거 다 해놨음
+		BoardDTO board = boardService.findByBoardNo(boardNo);
+		log.info("혹시 모르니 찍어봄 : {}", board);
+		
+		// 잘 돌아온다, 이제 boardDTO를 보내야한다, 앞에선 그냥 문자열 보냈는데...
+		
+		return "아재밌땅 ㅎ";
 		
 	}
 	

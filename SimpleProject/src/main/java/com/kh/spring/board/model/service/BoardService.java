@@ -80,6 +80,6 @@ public interface BoardService {
 	// ----- 이 아래는 댓글 관련 작업할건데 작업속도 보고 결정(수업 or 숙제)
 	// 댓글 서비스
 	
-	void insertReply(ReplyDTO reply); // 이거 추가하고 서비스 구현체
+	int insertReply(ReplyDTO reply, HttpSession session); // 이거 추가하고 서비스 구현체 -> 매개변수 수정 -> 반환형 수정
 
 }
